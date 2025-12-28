@@ -19,7 +19,9 @@ export function createApp(): Express {
     app.use(express.urlencoded({ extended: true }))
 
     // Serve static files from public directory
-    app.use(express.static(path.join(__dirname, '../public')))
+    // Handle both development and production paths
+    const publicPath = path.join(__dirname, '../public')
+    app.use(express.static(publicPath))
 
     // Request logging
     app.use((req: Request, res: Response, next: NextFunction) => {
@@ -34,7 +36,8 @@ export function createApp(): Express {
 
     // Serve chat page at root
     app.get('/', (req: Request, res: Response) => {
-        res.sendFile(path.join(__dirname, '../public/index.html'))
+        const indexPath = path.join(publicPath, 'index.html')
+        res.sendFile(indexPath)
     })
 
     // Error handling (must be last)
