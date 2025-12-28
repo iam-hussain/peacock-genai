@@ -4,12 +4,48 @@ import { agentManager } from '../../agents'
 import { createError } from '../../middleware/error-handler'
 import { type ValidatedRequest } from '../../middleware/validator'
 import { type Message, type TokenUsage } from '../../types'
+import { logger } from '../../utils/logger'
+import { MESSAGE_STATUS, MESSAGE_TYPE, MESSAGE_SENDER, generateMessageId } from '../../constants'
+import { detectErrorType } from './error-detection'
+
+/**
+ * LangChain result metadata structure
+ */
+interface LangChainMetadata {
+  usage?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+    total_tokens?: number
+    promptTokens?: number
+    completionTokens?: number
+    totalTokens?: number
+  }
+  token_usage?: {
+    prompt_tokens?: number
+    completion_tokens?: number
+    total_tokens?: number
+    promptTokens?: number
+    completionTokens?: number
+    totalTokens?: number
+  }
+}
+
+interface LangChainMessage {
+  response_metadata?: LangChainMetadata
+  metadata?: LangChainMetadata
+}
+
+interface LangChainResult {
+  response_metadata?: LangChainMetadata
+  metadata?: LangChainMetadata
+  messages?: LangChainMessage[]
+}
 
 /**
  * Extracts token usage information from agent result
  * LangChain v1.x stores token usage in different places depending on the provider
  */
-export function extractTokenUsage(result: any): TokenUsage | undefined {
+export function extractTokenUsage(result: LangChainResult): TokenUsage | undefined {
   try {
     // Check for usage in response_metadata or nested in messages
     const metadata = result.response_metadata || result.metadata || {}
@@ -70,9 +106,9 @@ export async function handleAgentChat(
     // Extract token usage from result metadata
     const tokenUsage = extractTokenUsage(result)
 
-    // Print token usage to console
+    // Log token usage
     if (tokenUsage) {
-      console.log('Token Usage:', {
+      logger.info('Token Usage', {
         promptTokens: tokenUsage.promptTokens || 0,
         completionTokens: tokenUsage.completionTokens || 0,
         totalTokens: tokenUsage.totalTokens || 0,
@@ -81,13 +117,13 @@ export async function handleAgentChat(
 
     // Create response message in the same structure
     const responseMessage: Message = {
-      messageId: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type: 'text',
+      messageId: generateMessageId(),
+      type: MESSAGE_TYPE.TEXT,
       content: responseContent || '',
-      sender: 'assistant',
-      receiver: 'user',
+      sender: MESSAGE_SENDER.ASSISTANT,
+      receiver: MESSAGE_SENDER.USER,
       timestamp: new Date().toISOString(),
-      status: 'sent',
+      status: MESSAGE_STATUS.SENT,
       error: null,
       tokenUsage,
     }
@@ -95,29 +131,21 @@ export async function handleAgentChat(
     res.json(responseMessage)
   } catch (error: any) {
     // Log the original error for debugging
-    const errorMessage = error?.message || String(error) || 'Unknown error'
-    const errorStatus = error?.status || error?.statusCode || error?.response?.status
+    logger.error('Agent chat error:', error)
+
+    // Detect error type
+    const errorInfo = detectErrorType(error)
 
     // Handle specific error types with user-friendly messages
-    // Check for API key errors (401 status or specific error messages)
-    if (errorStatus === 401 ||
-      errorMessage.toLowerCase().includes('incorrect api key') ||
-      errorMessage.toLowerCase().includes('invalid api key') ||
-      errorMessage.toLowerCase().includes('authentication failed')) {
+    if (errorInfo.isApiKeyError) {
       return next(createError('Invalid API key. Please check your OpenAI API key configuration in the .env file.', 401))
     }
 
-    // Check for rate limit errors (429 status or specific error messages)
-    if (errorStatus === 429 ||
-      errorMessage.toLowerCase().includes('rate limit exceeded') ||
-      errorMessage.toLowerCase().includes('too many requests')) {
+    if (errorInfo.isRateLimitError) {
       return next(createError('Rate limit exceeded. Please try again in a few moments.', 429))
     }
 
-    // Check for quota/billing errors
-    if (errorStatus === 402 ||
-      errorMessage.toLowerCase().includes('insufficient quota') ||
-      errorMessage.toLowerCase().includes('billing')) {
+    if (errorInfo.isQuotaError) {
       return next(createError('Insufficient quota or billing issue. Please check your OpenAI account.', 402))
     }
 

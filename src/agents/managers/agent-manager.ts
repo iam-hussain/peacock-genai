@@ -5,6 +5,7 @@
 
 import { type ReactAgent } from 'langchain'
 import { createAgentInstance } from '../factory/agent-factory'
+import { logger } from '../../utils/logger'
 
 class AgentManager {
   private agent: ReactAgent | null = null
@@ -17,18 +18,19 @@ class AgentManager {
   async getAgent(): Promise<ReactAgent> {
     // Return cached agent if it exists
     if (this.agent) {
-      console.log('♻️  Using cached agent (no creation needed)')
+      logger.debug('Using cached agent (no creation needed)')
       return this.agent
     }
 
     // If initialization is in progress, wait for it
     if (this.initPromise) {
+      logger.debug('Agent initialization in progress, waiting...')
       return this.initPromise
     }
 
     // Create agent (only once)
     if (!this.isInitialized) {
-      console.log('🔄 First call: Creating agent instance (this happens only once)')
+      logger.info('First call: Creating agent instance (this happens only once)')
       this.isInitialized = true
     }
 
@@ -36,8 +38,12 @@ class AgentManager {
 
     try {
       this.agent = await this.initPromise
-      console.log('✅ Agent created and cached - will be reused for all future requests')
+      logger.info('Agent created and cached - will be reused for all future requests')
       return this.agent
+    } catch (error) {
+      logger.error('Failed to create agent:', error)
+      this.isInitialized = false // Allow retry
+      throw error
     } finally {
       this.initPromise = null
     }
@@ -47,8 +53,13 @@ class AgentManager {
    * Initialize agent at startup
    */
   async initialize(): Promise<void> {
-    await this.getAgent()
-    console.log('Agent initialized')
+    try {
+      await this.getAgent()
+      logger.info('Agent initialized successfully')
+    } catch (error) {
+      logger.error('Failed to initialize agent:', error)
+      throw error
+    }
   }
 }
 

@@ -8,6 +8,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { getSystemPrompt } from '../prompts/club-agent.prompt'
 import { withGuardrail } from '../middleware/guardrail'
 import { getAgentConfig } from '../../config/agent'
+import { logger } from '../../utils/logger'
 
 /**
  * Create a React agent instance
@@ -32,7 +33,7 @@ export async function createAgentInstance(): Promise<ReactAgent> {
   // Get system prompt
   const systemPrompt = getSystemPrompt('club')
 
-  console.log('🔧 Factory: Creating new agent instance', {
+  logger.info('Factory: Creating new agent instance', {
     model: config.model,
     temperature: config.temperature,
     maxTokens: config.maxTokens,

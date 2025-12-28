@@ -1,4 +1,5 @@
 import { type Request, type Response, type NextFunction } from 'express'
+import { logger } from '../utils/logger'
 
 export interface AppError extends Error {
     statusCode?: number
@@ -77,7 +78,7 @@ export function errorHandler(
         }
     }
 
-    console.error('Error:', logData)
+    logger.error('Request error', logData)
 
     // Send sanitized error response
     res.status(statusCode).json({
