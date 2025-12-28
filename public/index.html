@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peacock GenAI - Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            max-height: 700px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: #667eea;
+        }
+
+        .message.assistant .message-avatar {
+            background: #764ba2;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            padding: 0 4px;
+        }
+
+        .message.user .message-time {
+            text-align: right;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #999;
+            font-size: 14px;
+            padding: 12px 16px;
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .error-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 12px 0;
+            border-left: 4px solid #ffc107;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+        }
+
+        .error-message strong {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            🦚 Peacock GenAI Chat
+        </div>
+        <div class="chat-messages" id="messages">
+            <div class="empty-state">
+                Start a conversation with the AI agent...
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <form class="chat-input-form" id="chatForm">
+                <input
+                    type="text"
+                    class="chat-input"
+                    id="messageInput"
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                    required
+                />
+                <button type="submit" class="send-button" id="sendButton">
+                    Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages')
+        const chatForm = document.getElementById('chatForm')
+        const messageInput = document.getElementById('messageInput')
+        const sendButton = document.getElementById('sendButton')
+
+        let messageIdCounter = 1
+
+        function generateMessageId() {
+            return `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        }
+
+        function addMessage(content, sender, timestamp) {
+            // Remove empty state if it exists
+            const emptyState = messagesContainer.querySelector('.empty-state')
+            if (emptyState) {
+                emptyState.remove()
+            }
+
+            const messageDiv = document.createElement('div')
+            messageDiv.className = `message ${sender}`
+            
+            const avatar = document.createElement('div')
+            avatar.className = 'message-avatar'
+            avatar.textContent = sender === 'user' ? 'U' : 'AI'
+            
+            const contentDiv = document.createElement('div')
+            contentDiv.className = 'message-content'
+            contentDiv.textContent = content
+            
+            const timeDiv = document.createElement('div')
+            timeDiv.className = 'message-time'
+            timeDiv.textContent = new Date(timestamp).toLocaleTimeString()
+            
+            contentDiv.appendChild(timeDiv)
+            messageDiv.appendChild(avatar)
+            messageDiv.appendChild(contentDiv)
+            
+            messagesContainer.appendChild(messageDiv)
+            messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+
+        function addLoadingMessage() {
+            const loadingDiv = document.createElement('div')
+            loadingDiv.className = 'message assistant'
+            loadingDiv.id = 'loading-message'
+            
+            const avatar = document.createElement('div')
+            avatar.className = 'message-avatar'
+            avatar.textContent = 'AI'
+            
+            const loadingContent = document.createElement('div')
+            loadingContent.className = 'loading'
+            loadingContent.innerHTML = `
+                <span>Thinking</span>
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `
+            
+            loadingDiv.appendChild(avatar)
+            loadingDiv.appendChild(loadingContent)
+            messagesContainer.appendChild(loadingDiv)
+            messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+
+        function removeLoadingMessage() {
+            const loadingMessage = document.getElementById('loading-message')
+            if (loadingMessage) {
+                loadingMessage.remove()
+            }
+        }
+
+        function addErrorMessage(message) {
+            // Remove empty state if it exists
+            const emptyState = messagesContainer.querySelector('.empty-state')
+            if (emptyState) {
+                emptyState.remove()
+            }
+
+            const errorDiv = document.createElement('div')
+            errorDiv.className = 'error-message'
+            
+            // Create error icon and message
+            const errorContent = document.createElement('div')
+            errorContent.style.display = 'flex'
+            errorContent.style.alignItems = 'flex-start'
+            errorContent.style.gap = '12px'
+            
+            const errorIcon = document.createElement('span')
+            errorIcon.textContent = '⚠️'
+            errorIcon.style.fontSize = '20px'
+            errorIcon.style.lineHeight = '1.2'
+            
+            const errorText = document.createElement('div')
+            errorText.style.flex = '1'
+            
+            // Format message with better structure
+            const messageParts = message.split('. ')
+            if (messageParts.length > 1) {
+                const strong = document.createElement('strong')
+                strong.textContent = messageParts[0] + '.'
+                errorText.appendChild(strong)
+                
+                const rest = messageParts.slice(1).join('. ')
+                if (rest) {
+                    const restText = document.createElement('div')
+                    restText.textContent = rest
+                    restText.style.marginTop = '4px'
+                    errorText.appendChild(restText)
+                }
+            } else {
+                errorText.textContent = message
+            }
+            
+            errorContent.appendChild(errorIcon)
+            errorContent.appendChild(errorText)
+            errorDiv.appendChild(errorContent)
+            
+            messagesContainer.appendChild(errorDiv)
+            messagesContainer.scrollTop = messagesContainer.scrollHeight
+        }
+
+        async function sendMessage(content) {
+            if (!content.trim()) return
+
+            const userMessage = {
+                messageId: generateMessageId(),
+                type: 'text',
+                content: content.trim(),
+                sender: 'user',
+                receiver: 'assistant',
+                timestamp: new Date().toISOString(),
+                status: 'sent',
+                error: null
+            }
+
+            addMessage(userMessage.content, 'user', userMessage.timestamp)
+            messageInput.value = ''
+            sendButton.disabled = true
+            addLoadingMessage()
+
+            try {
+                const response = await fetch('/api/agent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(userMessage),
+                })
+
+                removeLoadingMessage()
+
+                if (!response.ok) {
+                    let errorMessage = 'Failed to get response from the server'
+                    try {
+                        const errorData = await response.json()
+                        errorMessage = errorData.error || errorMessage
+                    } catch (e) {
+                        // If response is not JSON, use status text
+                        errorMessage = response.statusText || errorMessage
+                    }
+                    throw new Error(errorMessage)
+                }
+
+                const responseMessage = await response.json()
+                addMessage(responseMessage.content, 'assistant', responseMessage.timestamp)
+            } catch (error) {
+                removeLoadingMessage()
+                addErrorMessage(error.message || 'An error occurred')
+                console.error('Error:', error)
+            } finally {
+                sendButton.disabled = false
+                messageInput.focus()
+            }
+        }
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+            const content = messageInput.value.trim()
+            if (content) {
+                sendMessage(content)
+            }
+        })
+
+        // Focus input on load
+        messageInput.focus()
+    </script>
+</body>
+</html>
+

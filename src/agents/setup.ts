@@ -1,4 +1,3 @@
-import { ChatOpenAI } from '@langchain/openai'
 import { createAgent, type ReactAgent } from 'langchain'
 import { getAgentConfig } from '../config/agent'
 import { tools } from './tools'
@@ -31,15 +30,14 @@ When using tools, explain what you're doing and why.`
 export async function createAgentInstance(): Promise<ReactAgent> {
   const config = getAgentConfig()
 
-  const llm = new ChatOpenAI({
-    modelName: config.model,
-    temperature: config.temperature,
-    openAIApiKey: config.apiKey,
-  })
-
+  // Use model string identifier for LangChain v1.x
+  // TypeScript has issues with deep type inference in LangChain tool types
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore - Type instantiation is excessively deep (known LangChain/TypeScript issue)
   const agent = createAgent({
-    llm,
+    model: `openai:${config.model}`,
     tools,
+    // @ts-ignore
     prompt: systemPrompt,
   })
 

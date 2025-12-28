@@ -21,6 +21,12 @@ export type MessageType = 'text' | 'image' | 'file' | 'audio'
 export type MessageSender = 'user' | 'assistant' | 'system'
 export type MessageStatus = 'sent' | 'delivered' | 'read' | 'error' | 'pending'
 
+export interface TokenUsage {
+    promptTokens?: number
+    completionTokens?: number
+    totalTokens?: number
+}
+
 export interface Message {
     messageId: string
     type: MessageType
@@ -30,6 +36,7 @@ export interface Message {
     timestamp: string
     status: MessageStatus
     error: string | null
+    tokenUsage?: TokenUsage
 }
 
 /**

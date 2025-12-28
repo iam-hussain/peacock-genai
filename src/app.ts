@@ -1,4 +1,5 @@
 import express, { type Express, type Request, type Response, type NextFunction } from 'express'
+import path from 'path'
 import cors from 'cors'
 import helmet from 'helmet'
 import { healthRouter } from './routes/health'
@@ -10,10 +11,15 @@ export function createApp(): Express {
     const app = express()
 
     // Middleware
-    app.use(helmet())
+    app.use(helmet({
+        contentSecurityPolicy: false, // Allow inline styles for the chat page
+    }))
     app.use(cors())
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))
+
+    // Serve static files from public directory
+    app.use(express.static(path.join(__dirname, '../public')))
 
     // Request logging
     app.use((req: Request, res: Response, next: NextFunction) => {
@@ -25,6 +31,11 @@ export function createApp(): Express {
     app.use('/health', healthRouter)
     app.use('/api', apiRouter)
     app.use('/api/agent', agentRouter)
+
+    // Serve chat page at root
+    app.get('/', (req: Request, res: Response) => {
+        res.sendFile(path.join(__dirname, '../public/index.html'))
+    })
 
     // Error handling (must be last)
     app.use(notFoundHandler)
