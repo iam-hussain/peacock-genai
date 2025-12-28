@@ -2,10 +2,10 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import path from 'path'
 import cors from 'cors'
 import helmet from 'helmet'
-import { healthRouter } from './routes/health'
-import { apiRouter } from './routes/api'
-import { agentRouter } from './routes/agent'
-import { errorHandler, notFoundHandler } from './middleware/error-handler'
+import { healthRouter } from '../api/routes/health'
+import { apiRouter } from '../api/routes'
+import { agentRouter } from '../api/routes/agent'
+import { errorHandler, notFoundHandler } from '../middleware/error-handler'
 
 export function createApp(): Express {
     const app = express()
@@ -20,7 +20,7 @@ export function createApp(): Express {
 
     // Serve static files from public directory
     // Handle both development and production paths
-    const publicPath = path.join(__dirname, '../public')
+    const publicPath = path.join(__dirname, '../../public')
     app.use(express.static(publicPath))
 
     // Request logging
@@ -46,3 +46,4 @@ export function createApp(): Express {
 
     return app
 }
+
