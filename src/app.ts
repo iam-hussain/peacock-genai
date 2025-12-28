@@ -3,6 +3,7 @@ import cors from 'cors'
 import helmet from 'helmet'
 import { healthRouter } from './routes/health'
 import { apiRouter } from './routes/api'
+import { agentRouter } from './routes/agent'
 import { errorHandler, notFoundHandler } from './middleware/error-handler'
 
 export function createApp(): Express {
@@ -23,6 +24,7 @@ export function createApp(): Express {
     // Routes
     app.use('/health', healthRouter)
     app.use('/api', apiRouter)
+    app.use('/api/agent', agentRouter)
 
     // Error handling (must be last)
     app.use(notFoundHandler)
