@@ -1,4 +1,5 @@
 import { createAgent, type ReactAgent } from 'langchain'
+import { ChatOpenAI } from '@langchain/openai'
 import { getAgentConfig } from '../config/agent'
 import { tools } from './tools'
 
@@ -40,30 +41,29 @@ export async function createAgentInstance(): Promise<ReactAgent> {
     throw new Error('OPENAI_API_KEY is required')
   }
 
-  // Set OpenAI API key (required for model string format)
-  process.env.OPENAI_API_KEY = config.apiKey
-
-  // Construct model identifier - ensure it's in the correct format
-  // Format: "openai:model-name" or just "model-name" for OpenAI
-  const modelIdentifier = config.model.startsWith('openai:')
-    ? config.model
-    : `openai:${config.model}`
+  // Create ChatOpenAI instance with explicit configuration
+  const chatModel = new ChatOpenAI({
+    modelName: config.model,
+    temperature: config.temperature,
+    maxTokens: config.maxTokens,
+    timeout: config.timeout * 1000, // Convert seconds to milliseconds
+    openAIApiKey: config.apiKey,
+  })
 
   console.log('Agent configured with:', {
     model: config.model,
-    modelIdentifier,
     temperature: config.temperature,
     maxTokens: config.maxTokens,
     timeout: config.timeout,
     hasApiKey: !!config.apiKey,
   })
 
-  // Use model string identifier for LangChain v1.x
+  // Use ChatOpenAI instance directly for LangChain v1.x
   // TypeScript has issues with deep type inference in LangChain tool types
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - Type instantiation is excessively deep (known LangChain/TypeScript issue)
   const agent = createAgent({
-    model: modelIdentifier,
+    model: chatModel,
     tools,
     // @ts-ignore
     prompt: systemPrompt,
