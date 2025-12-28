@@ -1,0 +1,1873 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Peacock App API",
+    "version": "1.0.0",
+    "description": "Comprehensive API documentation for Peacock App - A financial management system for clubs and members",
+    "contact": {
+      "name": "API Support"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3001",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.peacock.app",
+      "description": "Production server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Session cookie for authentication"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Validation error details"
+          }
+        }
+      },
+      "Account": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique account identifier"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "Email address",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Avatar image URL",
+            "nullable": true
+          },
+          "username": {
+            "type": "string",
+            "description": "Unique username"
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ],
+            "description": "Access level"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "SUPER_ADMIN",
+              "ADMIN",
+              "MEMBER"
+            ],
+            "description": "User role"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "SYSTEM",
+              "MEMBER",
+              "VENDOR"
+            ],
+            "description": "Account type"
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether account is active"
+          },
+          "canLogin": {
+            "type": "boolean",
+            "description": "Whether login is enabled"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last login timestamp"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Account creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique transaction identifier"
+          },
+          "fromId": {
+            "type": "string",
+            "description": "Source account ID"
+          },
+          "toId": {
+            "type": "string",
+            "description": "Destination account ID"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transaction amount"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "DEPOSIT",
+              "WITHDRAWAL",
+              "LOAN",
+              "LOAN_REPAYMENT",
+              "INTEREST",
+              "FEE",
+              "TRANSFER"
+            ],
+            "description": "Transaction type"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "ACCOUNT",
+              "CASH",
+              "CARD",
+              "UPI"
+            ],
+            "description": "Payment method"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g., INR)"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction timestamp"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Transaction description"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Summary identifier"
+          },
+          "monthStartDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date of the month"
+          },
+          "availableCash": {
+            "type": "number",
+            "description": "Available cash balance"
+          },
+          "totalInvested": {
+            "type": "number",
+            "description": "Total invested amount"
+          },
+          "pendingAmounts": {
+            "type": "number",
+            "description": "Pending amounts"
+          },
+          "currentValue": {
+            "type": "number",
+            "description": "Current portfolio value"
+          },
+          "totalPortfolioValue": {
+            "type": "number",
+            "description": "Total portfolio value"
+          },
+          "currentLoanTaken": {
+            "type": "number",
+            "description": "Current loan amount"
+          },
+          "interestBalance": {
+            "type": "number",
+            "description": "Interest balance"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check endpoints"
+    },
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Profile",
+      "description": "User profile management"
+    },
+    {
+      "name": "Account",
+      "description": "Account management"
+    },
+    {
+      "name": "Transaction",
+      "description": "Transaction management"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Dashboard data endpoints"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative endpoints"
+    },
+    {
+      "name": "Search",
+      "description": "Search functionality"
+    },
+    {
+      "name": "Upload",
+      "description": "File upload endpoints"
+    }
+  ],
+  "paths": {
+    "/api/account/loan": {
+      "post": {
+        "summary": "Get loan accounts",
+        "description": "Retrieves all member accounts with loan information, including active loans and loan history. Results are sorted by name and active status.",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of loan accounts",
+            "headers": {
+              "ETag": {
+                "description": "ETag for cache validation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control directives",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accounts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Account ID"
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Member name"
+                          },
+                          "active": {
+                            "type": "boolean",
+                            "description": "Whether loan is currently active"
+                          },
+                          "loanHistory": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            },
+                            "description": "Historical loan records"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified - client has cached version"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/account/member/{username}": {
+      "post": {
+        "summary": "Get member by username",
+        "description": "Retrieves detailed member information including loan data, club statistics, and membership duration",
+        "tags": [
+          "Account"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "username",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Member username",
+            "example": "john.doe"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "member": {
+                      "type": "object",
+                      "description": "Complete member information including account, loan, and statistics",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Account ID"
+                        },
+                        "username": {
+                          "type": "string",
+                          "description": "Username"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "description": "First name"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "Last name"
+                        },
+                        "active": {
+                          "type": "boolean",
+                          "description": "Whether member is active"
+                        },
+                        "loanHistory": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          },
+                          "description": "Historical loan records"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Member not found"
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Failed to fetch member."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticate user with username/email and password. Creates a session cookie upon successful login.",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "password"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Username or email address",
+                    "example": "john.doe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "User password",
+                    "example": "securePassword123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "headers": {
+              "Set-Cookie": {
+                "description": "Session cookie containing authentication token",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Login successful"
+                    },
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "admin",
+                            "admin-member",
+                            "member"
+                          ],
+                          "description": "User type"
+                        },
+                        "username": {
+                          "type": "string",
+                          "description": "Username (for admin)"
+                        },
+                        "accountId": {
+                          "type": "string",
+                          "description": "Account ID (for members)"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "SUPER_ADMIN",
+                            "ADMIN",
+                            "MEMBER"
+                          ],
+                          "description": "User role"
+                        },
+                        "accessLevel": {
+                          "type": "string",
+                          "enum": [
+                            "ADMIN",
+                            "MEMBER"
+                          ],
+                          "description": "Access level"
+                        },
+                        "canLogin": {
+                          "type": "boolean",
+                          "description": "Whether login is enabled"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials or account not set up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid username or password"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Login disabled for account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Login is disabled for this account. Please contact the club admin."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error or admin not configured",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "User logout",
+        "description": "Clears the session cookie and logs out the current user",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Logout successful"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to logout"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Get current user",
+        "description": "Returns the currently authenticated user information",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information or null if not authenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "description": "Authenticated user object"
+                        },
+                        {
+                          "type": "null",
+                          "description": "No user authenticated"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/status": {
+      "post": {
+        "summary": "Check authentication status",
+        "description": "Returns whether the user is logged in and their user information",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authentication status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isLoggedIn": {
+                      "type": "boolean",
+                      "description": "Whether user is authenticated"
+                    },
+                    "user": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "admin",
+                                "admin-member",
+                                "member"
+                              ]
+                            },
+                            "username": {
+                              "type": "string",
+                              "description": "Username (for admin)"
+                            },
+                            "accountId": {
+                              "type": "string",
+                              "description": "Account ID (for members)"
+                            },
+                            "id": {
+                              "type": "string",
+                              "description": "User ID"
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "SUPER_ADMIN",
+                                "ADMIN",
+                                "MEMBER"
+                              ]
+                            },
+                            "accessLevel": {
+                              "type": "string",
+                              "enum": [
+                                "ADMIN",
+                                "MEMBER"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard/summary": {
+      "get": {
+        "summary": "Get dashboard summary",
+        "description": "Returns structured financial data from Summary table for a specific month or the latest summary if no month provided. No calculations performed - data comes directly from database.",
+        "tags": [
+          "Dashboard"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}$",
+              "example": "2024-01"
+            },
+            "description": "Month in YYYY-MM format. If not provided, returns latest summary."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard summary data",
+            "headers": {
+              "ETag": {
+                "description": "ETag for cache validation",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "Cache control directives",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "description": "Dashboard financial data structure",
+                      "properties": {
+                        "availableCash": {
+                          "type": "number",
+                          "description": "Available cash balance"
+                        },
+                        "totalInvested": {
+                          "type": "number",
+                          "description": "Total invested amount"
+                        },
+                        "currentValue": {
+                          "type": "number",
+                          "description": "Current portfolio value"
+                        },
+                        "totalPortfolioValue": {
+                          "type": "number",
+                          "description": "Total portfolio value"
+                        },
+                        "currentLoanTaken": {
+                          "type": "number",
+                          "description": "Current loan amount"
+                        },
+                        "interestBalance": {
+                          "type": "number",
+                          "description": "Interest balance"
+                        },
+                        "memberOutflow": {
+                          "type": "object",
+                          "properties": {
+                            "pendingAdjustments": {
+                              "type": "number",
+                              "description": "Pending member adjustments"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified - client has cached version"
+          },
+          "400": {
+            "description": "Invalid month format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid month format. Use YYYY-MM"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Summary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/docs": {
+      "get": {
+        "summary": "Get Swagger API documentation",
+        "description": "Returns the OpenAPI/Swagger specification in JSON format",
+        "tags": [
+          "Docs"
+        ],
+        "responses": {
+          "200": {
+            "description": "Swagger specification",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Returns system status and database connectivity. No authentication required.",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "System is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "healthy",
+                        "degraded"
+                      ],
+                      "description": "Overall system health status"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Current server timestamp in ISO format"
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "Application version number"
+                    },
+                    "environment": {
+                      "type": "string",
+                      "enum": [
+                        "development",
+                        "production",
+                        "test"
+                      ],
+                      "description": "Current environment"
+                    },
+                    "services": {
+                      "type": "object",
+                      "properties": {
+                        "database": {
+                          "type": "object",
+                          "properties": {
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "healthy",
+                                "unhealthy"
+                              ],
+                              "description": "Database connection status"
+                            },
+                            "latency": {
+                              "type": "string",
+                              "description": "Database ping latency in milliseconds"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "System is unhealthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "unhealthy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "error": {
+                      "type": "string",
+                      "example": "Health check failed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "summary": "CORS preflight handler",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "204": {
+            "description": "CORS preflight response"
+          }
+        }
+      }
+    },
+    "/api/profile/password": {
+      "patch": {
+        "summary": "Change user password",
+        "description": "Updates the password for the authenticated user. Super admin password changes are not allowed.",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ],
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Current password for verification",
+                    "example": "oldPassword123"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 6,
+                    "description": "New password (minimum 6 characters)",
+                    "example": "newSecurePassword456"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Password changed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or password too short",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "New password must be at least 6 characters"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or incorrect current password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Current password is incorrect"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - super admin or non-member",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Super Admin password cannot be changed from the dashboard"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Account not found or password not set"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to change password"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "summary": "Get user profile",
+        "description": "Returns the profile information for the authenticated user. Super admins get a virtual profile.",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profile information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "account": {
+                      "$ref": "#/components/schemas/Account"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - only members can access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Only members can access profile"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Account not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to fetch profile"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "post": {
+        "summary": "Search across members, vendors, loans, and transactions",
+        "description": "Performs a search query across multiple entities in the system",
+        "tags": [
+          "Search"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "searchQuery": {
+                    "type": "string",
+                    "description": "Search query string",
+                    "example": "john"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string",
+                      "description": "The search query that was processed"
+                    },
+                    "members": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "Matching members"
+                    },
+                    "vendors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "Matching vendors"
+                    },
+                    "loans": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "Matching loans"
+                    },
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "Matching transactions"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to process search"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/create": {
+      "post": {
+        "summary": "Create a new transaction",
+        "description": "Creates a new financial transaction between accounts. Requires write access. Updates passbooks automatically.",
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "fromId",
+                  "toId",
+                  "amount",
+                  "transactionType"
+                ],
+                "properties": {
+                  "fromId": {
+                    "type": "string",
+                    "description": "Source account ID",
+                    "example": "507f1f77bcf86cd799439011"
+                  },
+                  "toId": {
+                    "type": "string",
+                    "description": "Destination account ID",
+                    "example": "507f1f77bcf86cd799439012"
+                  },
+                  "amount": {
+                    "type": "number",
+                    "description": "Transaction amount (must be positive)",
+                    "minimum": 0.01,
+                    "example": 1000.5
+                  },
+                  "transactionType": {
+                    "type": "string",
+                    "enum": [
+                      "DEPOSIT",
+                      "WITHDRAWAL",
+                      "LOAN",
+                      "LOAN_REPAYMENT",
+                      "INTEREST",
+                      "FEE",
+                      "TRANSFER"
+                    ],
+                    "description": "Type of transaction",
+                    "example": "DEPOSIT"
+                  },
+                  "occurredAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Transaction timestamp (defaults to now if not provided)",
+                    "example": "2024-01-15T10:30:00Z"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Optional transaction description",
+                    "example": "Monthly deposit"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transaction": {
+                      "$ref": "#/components/schemas/Transaction"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - write access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to create transaction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction": {
+      "post": {
+        "summary": "Get transactions list",
+        "description": "Retrieves a paginated list of transactions with filtering and sorting options. Requires authentication.",
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Number of transactions per page"
+          },
+          {
+            "in": "query",
+            "name": "accountId",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by account ID (from or to)"
+          },
+          {
+            "in": "query",
+            "name": "transactionType",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DEPOSIT",
+                "WITHDRAWAL",
+                "LOAN",
+                "LOAN_REPAYMENT",
+                "INTEREST",
+                "FEE",
+                "TRANSFER",
+                "LOAN_ALL"
+              ]
+            },
+            "description": "Filter by transaction type"
+          },
+          {
+            "in": "query",
+            "name": "startDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Start date for date range filter"
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "End date for date range filter"
+          },
+          {
+            "in": "query",
+            "name": "sortField",
+            "schema": {
+              "type": "string",
+              "default": "occurredAt",
+              "enum": [
+                "occurredAt",
+                "createdAt",
+                "amount"
+              ]
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "in": "query",
+            "name": "sortOrder",
+            "schema": {
+              "type": "string",
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "description": "Sort order"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "fromId": {
+                            "type": "string"
+                          },
+                          "toId": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "number"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "occurredAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "from": {
+                            "type": "object",
+                            "description": "Source account details"
+                          },
+                          "to": {
+                            "type": "object",
+                            "description": "Destination account details"
+                          }
+                        }
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of transactions"
+                    },
+                    "page": {
+                      "type": "integer",
+                      "description": "Current page number"
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "description": "Total number of pages"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/avatar": {
+      "post": {
+        "summary": "Upload avatar image",
+        "description": "Uploads and processes an avatar image. Requires admin access. Image is resized to 200x200px and converted to JPEG.",
+        "tags": [
+          "Upload"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Image file (max 5MB, will be resized to 200x200px)"
+                  },
+                  "oldImageUrl": {
+                    "type": "string",
+                    "description": "URL of old image to delete (optional)",
+                    "example": "/image/avatar_13.jpeg"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avatar uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "description": "Public URL of the uploaded image",
+                      "example": "/image/avatar_1234567890_abc123.jpg"
+                    },
+                    "filename": {
+                      "type": "string",
+                      "description": "Generated filename",
+                      "example": "avatar_1234567890_abc123.jpg"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file or file too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "File size must be less than 5MB"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Failed to upload avatar"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
