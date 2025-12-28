@@ -5,7 +5,12 @@
 
 import { logger } from './logger'
 
-const API_BASE_URL = process.env.PEACOCK_API_URL || 'http://localhost:3001'
+/**
+ * Get API base URL from environment (lazy evaluation to ensure dotenv is loaded)
+ */
+function getApiBaseUrl(): string {
+    return process.env.PEACOCK_API_URL || 'http://localhost:3001'
+}
 
 // Admin credentials for agent access
 const ADMIN_USERNAME = process.env.PEACOCK_ADMIN_USERNAME || 'admin'
@@ -40,7 +45,8 @@ async function login(): Promise<string> {
     loginPromise = (async () => {
         try {
             logger.debug('Logging in as admin...')
-            const url = `${API_BASE_URL}/api/auth/login`
+            const baseUrl = getApiBaseUrl()
+            const url = `${baseUrl}/api/auth/login`
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -59,12 +65,15 @@ async function login(): Promise<string> {
             }
 
             // Extract session cookie from Set-Cookie header
+            // Note: The cookie name is 'pc_auth', not 'session'
             const setCookieHeader = response.headers.get('set-cookie')
+
             if (setCookieHeader) {
-                // Extract the session cookie value
-                const match = setCookieHeader.match(/session=([^;]+)/)
+                // Extract the pc_auth cookie value
+                const match = setCookieHeader.match(/pc_auth=([^;]+)/)
+
                 if (match) {
-                    sessionCookie = `session=${match[1]}`
+                    sessionCookie = `pc_auth=${match[1]}`
                     logger.info('Successfully logged in as admin')
                     return sessionCookie
                 }
@@ -105,7 +114,7 @@ export async function apiRequest<T>(
     const requiresAuth = !endpoint.includes('/health') && !endpoint.includes('/auth/login')
     const sessionCookies = cookies || (requiresAuth ? await getSessionCookie() : undefined)
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`
+    const url = endpoint.startsWith('http') ? endpoint : `${getApiBaseUrl()}${endpoint}`
 
     const requestHeaders: Record<string, string> = {
         'Content-Type': 'application/json',

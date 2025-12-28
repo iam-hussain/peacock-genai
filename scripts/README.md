@@ -7,17 +7,17 @@ Fetches the Swagger/OpenAPI JSON specification from your server and saves it to 
 ### Usage
 
 ```bash
-# Default: fetches from http://localhost:3001 and saves to swagger.json
+# Default: fetches from http://localhost:3001 and saves to src/data/swagger.json
 npm run fetch-swagger
 
 # Custom URL and output file via environment variables
-SWAGGER_URL=http://localhost:3001 OUTPUT_FILE=openapi.json npm run fetch-swagger
+SWAGGER_URL=http://localhost:3001 OUTPUT_FILE=src/data/openapi.json npm run fetch-swagger
 ```
 
 ### Environment Variables
 
 - `SWAGGER_URL` - Base URL of your server (default: `http://localhost:3001`)
-- `OUTPUT_FILE` - Name of the output file (default: `swagger.json`)
+- `OUTPUT_FILE` - Name of the output file (default: `src/data/swagger.json`)
 
 ### How it works
 
@@ -38,17 +38,17 @@ Fetches all accounts and club configuration from the `/api/info` endpoint and sa
 ### Usage
 
 ```bash
-# Default: fetches from http://localhost:3001 and saves to api-info.json
+# Default: fetches from http://localhost:3001 and saves to src/data/base-info.json
 npm run fetch-info
 
 # Custom URL, output file, and credentials via environment variables
-PEACOCK_API_URL=http://localhost:3001 INFO_OUTPUT_FILE=club-info.json npm run fetch-info
+PEACOCK_API_URL=http://localhost:3001 INFO_OUTPUT_FILE=src/data/club-info.json npm run fetch-info
 ```
 
 ### Environment Variables
 
 - `PEACOCK_API_URL` - Base URL of your server (default: `http://localhost:3001`)
-- `INFO_OUTPUT_FILE` - Name of the output file (default: `api-info.json`)
+- `INFO_OUTPUT_FILE` - Name of the output file (default: `src/data/base-info.json`)
 - `PEACOCK_ADMIN_USERNAME` - Admin username for authentication (default: `admin`)
 - `PEACOCK_ADMIN_PASSWORD` - Admin password for authentication (default: `peacock`)
 

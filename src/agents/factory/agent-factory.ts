@@ -31,15 +31,9 @@ export async function createAgentInstance(): Promise<ReactAgent> {
     openAIApiKey: config.apiKey,
   })
 
-  // Get system prompt
-  const systemPrompt = getSystemPrompt('club')
-
-  logger.info('Factory: Creating new agent instance', {
-    model: config.model,
-    temperature: config.temperature,
-    maxTokens: config.maxTokens,
-    toolsCount: agentTools.length,
-  })
+  // Get system prompt with context
+  const systemPrompt = await getSystemPrompt('club')
+  console.log('System prompt:', systemPrompt)
 
   // Create agent with tools
   // @ts-ignore - Type instantiation is excessively deep

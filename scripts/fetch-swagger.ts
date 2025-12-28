@@ -5,8 +5,8 @@ import path from 'path'
  * Fetches Swagger/OpenAPI JSON specification from the server and saves it locally
  */
 async function fetchSwaggerSpec() {
-    const baseUrl = process.env.SWAGGER_URL || 'http://localhost:3001'
-    const outputFile = process.env.OUTPUT_FILE || 'swagger.json'
+    const baseUrl = process.env.PEACOCK_API_URL || 'http://localhost:3001'
+    const outputFile = process.env.OUTPUT_FILE || 'src/data/swagger.json'
 
     // Common Swagger/OpenAPI JSON endpoints
     const endpoints = [

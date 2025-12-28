@@ -6,7 +6,7 @@ import path from 'path'
  */
 async function fetchInfo() {
     const baseUrl = process.env.PEACOCK_API_URL || 'http://localhost:3001'
-    const outputFile = process.env.INFO_OUTPUT_FILE || 'api-info.json'
+    const outputFile = process.env.INFO_OUTPUT_FILE || 'src/data/base-info.json'
     const username = process.env.PEACOCK_ADMIN_USERNAME || 'admin'
     const password = process.env.PEACOCK_ADMIN_PASSWORD || 'peacock'
 
@@ -50,14 +50,10 @@ async function fetchInfo() {
         // Display summary
         const memberCount = Array.isArray(json.member) ? json.member.length : 0
         const vendorCount = Array.isArray(json.vendor) ? json.vendor.length : 0
-        const clubCount = Array.isArray(json.club) ? json.club.length : 0
-        const systemCount = Array.isArray(json.system) ? json.system.length : 0
 
         console.log(`\nSummary:`)
         console.log(`  Members: ${memberCount}`)
         console.log(`  Vendors: ${vendorCount}`)
-        console.log(`  Club accounts: ${clubCount}`)
-        console.log(`  System accounts: ${systemCount}`)
         console.log(`  Club config: ${json.clubConfig ? 'Yes' : 'No'}`)
         console.log(`  Club data: ${json.clubData ? 'Yes' : 'No'}`)
     } catch (error) {
