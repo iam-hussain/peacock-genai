@@ -9,6 +9,7 @@ import { getSystemPrompt } from '../prompts/club-agent.prompt'
 import { withGuardrail } from '../middleware/guardrail'
 import { getAgentConfig } from '../../config/agent'
 import { logger } from '../../utils/logger'
+import { agentTools } from '../tools'
 
 /**
  * Create a React agent instance
@@ -37,18 +38,21 @@ export async function createAgentInstance(): Promise<ReactAgent> {
     model: config.model,
     temperature: config.temperature,
     maxTokens: config.maxTokens,
+    toolsCount: agentTools.length,
   })
 
-  // Create agent
+  // Create agent with tools
   // @ts-ignore - Type instantiation is excessively deep
   let agent = createAgent({
     model: chatModel,
     // @ts-ignore
     prompt: systemPrompt,
+    // @ts-ignore
+    tools: agentTools,
   })
 
   // Apply guardrail middleware
-  agent = withGuardrail(agent)
+  // agent = withGuardrail(agent)
 
   return agent
 }

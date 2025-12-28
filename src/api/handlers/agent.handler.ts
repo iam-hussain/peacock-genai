@@ -108,11 +108,12 @@ export async function handleAgentChat(
 
     // Log token usage
     if (tokenUsage) {
-      logger.info('Token Usage', {
+      const usage = {
         promptTokens: tokenUsage.promptTokens || 0,
         completionTokens: tokenUsage.completionTokens || 0,
         totalTokens: tokenUsage.totalTokens || 0,
-      })
+      }
+      logger.info(`Token Usage: ${JSON.stringify(usage)}`)
     }
 
     // Create response message in the same structure
