@@ -14,10 +14,19 @@ npm install
 cp .env.example .env
 ```
 
-3. Add your OpenAI API key to `.env`:
-```
+3. Add your OpenAI API key and configuration to `.env`:
+```env
 OPENAI_API_KEY=your_actual_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_TEMPERATURE=0.1
+AGENT_MAX_TOKENS=1000
+AGENT_TIMEOUT=30
 ```
+
+**Configuration Options:**
+- `OPENAI_TEMPERATURE`: Controls randomness (0.0-2.0, default: 0.1)
+- `AGENT_MAX_TOKENS`: Maximum tokens in response (1-100000, default: 1000)
+- `AGENT_TIMEOUT`: Request timeout in seconds (1-300, default: 30)
 
 4. Run the development server:
 ```bash

@@ -30,6 +30,12 @@ When using tools, explain what you're doing and why.`
 export async function createAgentInstance(): Promise<ReactAgent> {
   const config = getAgentConfig()
 
+  // Set model configuration via environment variables
+  // LangChain v1.x reads these when using model string format
+  process.env.OPENAI_TEMPERATURE = String(config.temperature)
+  process.env.OPENAI_MAX_TOKENS = String(config.maxTokens)
+  process.env.OPENAI_TIMEOUT = String(config.timeout * 1000) // Convert seconds to milliseconds
+
   // Use model string identifier for LangChain v1.x
   // TypeScript has issues with deep type inference in LangChain tool types
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -39,6 +45,13 @@ export async function createAgentInstance(): Promise<ReactAgent> {
     tools,
     // @ts-ignore
     prompt: systemPrompt,
+  })
+
+  console.log('Agent configured with:', {
+    model: config.model,
+    temperature: config.temperature,
+    maxTokens: config.maxTokens,
+    timeout: config.timeout,
   })
 
   return agent

@@ -8,7 +8,19 @@ const agentEnvSchema = z.object({
     .string()
     .transform(Number)
     .pipe(z.number().min(0).max(2))
-    .default('0.7'),
+    .default('0.1'),
+  AGENT_MAX_TOKENS: z
+    .string()
+    .transform(Number)
+    .pipe(z.number().min(1).max(100000))
+    .optional()
+    .default('1000'),
+  AGENT_TIMEOUT: z
+    .string()
+    .transform(Number)
+    .pipe(z.number().min(1).max(300))
+    .optional()
+    .default('30'),
 })
 
 type AgentEnv = z.infer<typeof agentEnvSchema>
@@ -28,6 +40,8 @@ export interface AgentConfig {
   apiKey: string
   model: string
   temperature: number
+  maxTokens: number
+  timeout: number
 }
 
 /**
@@ -47,6 +61,8 @@ export function getAgentConfig(): AgentConfig {
     apiKey: env.OPENAI_API_KEY,
     model: env.OPENAI_MODEL,
     temperature: env.OPENAI_TEMPERATURE,
+    maxTokens: env.AGENT_MAX_TOKENS,
+    timeout: env.AGENT_TIMEOUT,
   }
 }
 
