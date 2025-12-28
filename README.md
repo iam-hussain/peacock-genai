@@ -9,13 +9,22 @@ Express server with LangChain agent integration using OpenAI.
 npm install
 ```
 
-2. Create a `.env` file based on `.env.example`:
+2. Install dependencies:
 ```bash
-cp .env.example .env
+npm install
 ```
 
-3. Add your OpenAI API key and configuration to `.env`:
+3. Set up Prisma:
+```bash
+npm run prisma:generate
+```
+
+4. Create a `.env` file and add your configuration:
 ```env
+# Database
+DATABASE_URL="mongodb://localhost:27017/peacock-genai"
+
+# OpenAI Configuration
 OPENAI_API_KEY=your_actual_api_key_here
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_TEMPERATURE=0.1
@@ -24,6 +33,7 @@ AGENT_TIMEOUT=30
 ```
 
 **Configuration Options:**
+- `DATABASE_URL`: MongoDB connection string (required)
 - `OPENAI_TEMPERATURE`: Controls randomness (0.0-2.0, default: 0.1)
 - `AGENT_MAX_TOKENS`: Maximum tokens in response (1-100000, default: 1000)
 - `AGENT_TIMEOUT`: Request timeout in seconds (1-300, default: 30)
@@ -70,9 +80,12 @@ src/
 ├── middleware/
 │   └── error-handler.ts  # Error handling
 ├── lib/
-│   └── logger.ts         # Logging utility
-└── types/
-    └── index.ts          # TypeScript types
+│   ├── logger.ts         # Logging utility
+│   └── prisma.ts         # Prisma client singleton
+├── types/
+│   └── index.ts          # TypeScript types
+└── prisma/
+    └── schema.prisma     # Prisma schema (MongoDB)
 ```
 
 ## Best Practices Implemented

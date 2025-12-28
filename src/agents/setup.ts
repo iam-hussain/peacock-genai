@@ -30,28 +30,43 @@ When using tools, explain what you're doing and why.`
 export async function createAgentInstance(): Promise<ReactAgent> {
   const config = getAgentConfig()
 
-  // Set model configuration via environment variables
-  // LangChain v1.x reads these when using model string format
-  process.env.OPENAI_TEMPERATURE = String(config.temperature)
-  process.env.OPENAI_MAX_TOKENS = String(config.maxTokens)
-  process.env.OPENAI_TIMEOUT = String(config.timeout * 1000) // Convert seconds to milliseconds
+  // Validate model name
+  if (!config.model || typeof config.model !== 'string') {
+    throw new Error(`Invalid model configuration: ${config.model}`)
+  }
+
+  // Ensure API key is set
+  if (!config.apiKey) {
+    throw new Error('OPENAI_API_KEY is required')
+  }
+
+  // Set OpenAI API key (required for model string format)
+  process.env.OPENAI_API_KEY = config.apiKey
+
+  // Construct model identifier - ensure it's in the correct format
+  // Format: "openai:model-name" or just "model-name" for OpenAI
+  const modelIdentifier = config.model.startsWith('openai:')
+    ? config.model
+    : `openai:${config.model}`
+
+  console.log('Agent configured with:', {
+    model: config.model,
+    modelIdentifier,
+    temperature: config.temperature,
+    maxTokens: config.maxTokens,
+    timeout: config.timeout,
+    hasApiKey: !!config.apiKey,
+  })
 
   // Use model string identifier for LangChain v1.x
   // TypeScript has issues with deep type inference in LangChain tool types
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - Type instantiation is excessively deep (known LangChain/TypeScript issue)
   const agent = createAgent({
-    model: `openai:${config.model}`,
+    model: modelIdentifier,
     tools,
     // @ts-ignore
     prompt: systemPrompt,
-  })
-
-  console.log('Agent configured with:', {
-    model: config.model,
-    temperature: config.temperature,
-    maxTokens: config.maxTokens,
-    timeout: config.timeout,
   })
 
   return agent

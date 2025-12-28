@@ -3,7 +3,7 @@ import { z } from 'zod'
 // Environment schema for agent configuration
 const agentEnvSchema = z.object({
   OPENAI_API_KEY: z.string().min(1, 'OpenAI API key is required'),
-  OPENAI_MODEL: z.string().default('gpt-4.1-nano'),
+  OPENAI_MODEL: z.string().default('gpt-4o-mini'),
   OPENAI_TEMPERATURE: z
     .string()
     .transform(Number)
