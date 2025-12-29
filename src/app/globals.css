@@ -1,0 +1,226 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "BlackEcho";
+  src: url("/BlackEcho.otf");
+}
+
+@font-face {
+  font-family: "Roboto-Regular";
+  src: url("/Roboto-Regular.ttf");
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 251 15% 21%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 251 15% 21%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 251 15% 21%;
+
+    --bw: 0 0% 100%;
+    --bw-foreground: 0 0% 0%;
+
+    --inactive: 0 0% 45%;
+    --inactive-foreground: 0 0% 45%;
+
+    --paper: 225 36.36% 95.69%;
+    --paper-dark: 221.82 37.93% 82.94%;
+    --paper-foreground: 0 0% 100%;
+
+    --primary: 152 96% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 194 60% 50%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 223 28% 85%;
+    --accent-foreground: 251 15% 21%;
+
+    --info: 221.2 83.2% 53.3%;
+    --info-foreground: 210 40% 98%;
+
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 13% 91%;
+    --input: 221 39% 83%;
+    --ring: 221 39% 83%;
+    --radius: 0.3rem;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 129 65% 50%;
+    --primary-foreground: 0 0% 5%;
+    --bw: 0 0% 5%;
+    --bw-foreground: 0 0% 100%;
+    --inactive: 0 0% 45%;
+    --inactive-foreground: 0 0% 45%;
+
+    --secondary: 194 100% 66%;
+    --secondary-foreground: 0 0% 15%;
+    --paper: 244 13% 11%;
+    --paper-foreground: 210 20% 98%;
+    --info: 217.2 91.2% 59.8%;
+    --info-foreground: 222.2 47.4% 11.2%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
+  }
+}
+
+.width-avl {
+  width: -webkit-fill-available;
+}
+
+html,
+body {
+  height: auto;
+  min-height: 100svh;
+  width: 100%;
+}
+
+.main-wrapper {
+  height: auto;
+  min-height: 100svh;
+  width: 100%;
+  display: flex;
+}
+
+.main-screen-wrapper {
+  height: 100%;
+  max-height: 100svh;
+  width: 100%;
+  display: flex;
+}
+
+.page-main {
+  width: 100%;
+  height: auto;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: row;
+}
+
+.side-menu {
+  height: 100dvh;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  position: fixed;
+}
+
+.h-d-screen {
+  height: 100svh;
+}
+
+.h-d-screen-top-open {
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .h-d-screen-top-open {
+    height: calc(100svh - 50px);
+  }
+}
+
+.h-d-screen-top-close {
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .h-d-screen-top-close {
+    height: 100svh;
+  }
+}
+
+.min-h-fill {
+  min-height: 100vh;
+}
+
+.link {
+  color: blue;
+}
+
+[data-table="action"] {
+  min-width: 50px;
+}
+
+[data-table="id"] {
+  min-width: 220px;
+}
+
+[data-table="createdAt"],
+[data-table="updatedAt"],
+[data-table="transactionAt"] {
+  min-width: 200px;
+}
+
+[data-table="recentInvest"],
+[data-table="nextDueDate"],
+[data-table="startAt"],
+[data-table="amount"] {
+  min-width: 140px;
+}
+
+[data-table="member_name"],
+[data-table="vendor_name"],
+[data-table="from_name"],
+[data-table="to_name"] {
+  min-width: 205px;
+}
+
+[data-table="transactionType"],
+[data-table="name"] {
+  min-width: 215px;
+}
+
+[data-table="current"],
+[data-table="balance"],
+[data-table="account"],
+[data-table="expected"],
+[data-table="amount"],
+[data-table="deposit"],
+[data-table="balance"],
+[data-table="joinedAt"] {
+  min-width: 180px;
+}
+
+[data-table="type"],
+[data-table="invest"],
+[data-table="profit"],
+[data-table="returns"],
+[data-table="netValue"] {
+  min-width: 120px;
+}
+

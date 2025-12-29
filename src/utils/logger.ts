@@ -1,30 +1,83 @@
 /**
- * Logger utility
- * Provides structured logging functionality
+ * Logger Utility
+ * Centralized logging for the application with request ID support
  */
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug'
+type LogLevel = "debug" | "info" | "warn" | "error";
 
-function formatMessage(level: LogLevel, message: string, ...args: unknown[]): string {
-  const timestamp = new Date().toISOString()
-  const prefix = `[${timestamp}] [${level.toUpperCase()}]`
-  return `${prefix} ${message}${args.length > 0 ? ' ' + args.map(String).join(' ') : ''}`
+interface LogEntry {
+  level: LogLevel;
+  message: string;
+  timestamp: string;
+  requestId?: string;
+  data?: unknown;
 }
 
-export const logger = {
-  info: (message: string, ...args: unknown[]): void => {
-    console.log(formatMessage('info', message, ...args))
-  },
-  warn: (message: string, ...args: unknown[]): void => {
-    console.warn(formatMessage('warn', message, ...args))
-  },
-  error: (message: string, ...args: unknown[]): void => {
-    console.error(formatMessage('error', message, ...args))
-  },
-  debug: (message: string, ...args: unknown[]): void => {
-    if (process.env.NODE_ENV === 'development') {
-      console.debug(formatMessage('debug', message, ...args))
+class Logger {
+  private getRequestId(): string | undefined {
+    // In Next.js, we can get request ID from async context if needed
+    return undefined;
+  }
+
+  private log(
+    level: LogLevel,
+    message: string,
+    data?: unknown,
+    requestId?: string
+  ): void {
+    const entry: LogEntry = {
+      level,
+      message,
+      timestamp: new Date().toISOString(),
+      requestId: requestId || this.getRequestId(),
+      data,
+    };
+
+    // In production, you might want to send logs to a service
+    // For now, we'll use console with structured format
+    const requestIdPart = entry.requestId ? ` [${entry.requestId}]` : "";
+    const logMessage = `[${entry.timestamp}]${requestIdPart} [${level.toUpperCase()}] ${message}`;
+
+    // Format data if provided
+    const dataStr = data
+      ? typeof data === "object"
+        ? JSON.stringify(data)
+        : String(data)
+      : "";
+
+    switch (level) {
+      case "debug":
+        if (process.env.NODE_ENV === "development") {
+          console.debug(logMessage, dataStr);
+        }
+        break;
+      case "info":
+        console.info(logMessage, dataStr);
+        break;
+      case "warn":
+        console.warn(logMessage, dataStr);
+        break;
+      case "error":
+        console.error(logMessage, dataStr);
+        break;
     }
-  },
+  }
+
+  debug(message: string, data?: unknown, requestId?: string): void {
+    this.log("debug", message, data, requestId);
+  }
+
+  info(message: string, data?: unknown, requestId?: string): void {
+    this.log("info", message, data, requestId);
+  }
+
+  warn(message: string, data?: unknown, requestId?: string): void {
+    this.log("warn", message, data, requestId);
+  }
+
+  error(message: string, data?: unknown, requestId?: string): void {
+    this.log("error", message, data, requestId);
+  }
 }
 
+export const logger = new Logger();

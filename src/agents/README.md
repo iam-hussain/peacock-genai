@@ -7,17 +7,21 @@ Simple and clean architecture for managing LangChain agents with automatic cachi
 ```
 agents/
 ├── index.ts              # Main entry point - exports all public APIs
-├── setup.ts              # Legacy compatibility layer (deprecated)
 ├── types/                 # TypeScript type definitions
 │   └── index.ts
-├── prompts/               # System prompts for different agent types
-│   └── club-agent.prompt.ts
+├── prompts/               # System prompts and context generators
+│   ├── club-agent.prompt.ts
+│   └── context-generator.ts
 ├── factory/               # Agent factory for creating agents
 │   └── agent-factory.ts
 ├── managers/              # Agent manager - singleton with caching
 │   └── agent-manager.ts
-└── middleware/            # Agent middleware
-    └── guardrail.ts
+├── middleware/            # Agent middleware
+│   └── guardrail.ts
+└── tools/                 # Agent tools
+    ├── index.ts
+    ├── member-tools.ts
+    └── transaction-tools.ts
 ```
 
 ## Usage

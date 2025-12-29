@@ -1,6 +1,6 @@
 # Peacock GenAI
 
-Express server with LangChain agent integration using OpenAI.
+Next.js application with LangChain agent integration using OpenAI for Peacock Club financial management.
 
 ## Setup
 
@@ -9,45 +9,43 @@ Express server with LangChain agent integration using OpenAI.
 npm install
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Set up Prisma:
-```bash
-npm run prisma:generate
-```
-
-4. Create a `.env` file and add your configuration:
+2. Create a `.env.local` file and add your configuration:
 ```env
-# Database
-DATABASE_URL="mongodb://localhost:27017/peacock-genai"
-
 # OpenAI Configuration
 OPENAI_API_KEY=your_actual_api_key_here
 OPENAI_MODEL=gpt-4o-mini
 OPENAI_TEMPERATURE=0.1
 AGENT_MAX_TOKENS=1000
 AGENT_TIMEOUT=30
+
+# Peacock API Configuration
+PEACOCK_API_URL=https://peacock.iam-hussain.site
+PEACOCK_ADMIN_USERNAME=admin
+PEACOCK_ADMIN_PASSWORD=peacock
 ```
 
 **Configuration Options:**
-- `DATABASE_URL`: MongoDB connection string (required)
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `OPENAI_MODEL`: Model to use (default: gpt-4o-mini)
 - `OPENAI_TEMPERATURE`: Controls randomness (0.0-2.0, default: 0.1)
 - `AGENT_MAX_TOKENS`: Maximum tokens in response (1-100000, default: 1000)
 - `AGENT_TIMEOUT`: Request timeout in seconds (1-300, default: 30)
+- `PEACOCK_API_URL`: Base URL for Peacock API
+- `PEACOCK_ADMIN_USERNAME`: Admin username for API access
+- `PEACOCK_ADMIN_PASSWORD`: Admin password for API access
 
-4. Run the development server:
+3. Run the development server:
 ```bash
 npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## API Endpoints
 
 ### Health Check
 ```
-GET /health
+GET /api/health
 ```
 
 ### Agent Chat
@@ -56,36 +54,45 @@ POST /api/agent
 Content-Type: application/json
 
 {
-  "message": "What is 25 * 4?"
+  "messageId": "msg-123",
+  "type": "text",
+  "content": "What is 25 * 4?",
+  "sender": "user",
+  "receiver": "assistant",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "status": "sent",
+  "error": null
 }
 ```
 
 ## Project Structure
 
 ```
+app/
+├── api/
+│   ├── agent/
+│   │   └── route.ts      # Agent chat API route
+│   └── health/
+│       └── route.ts      # Health check API route
+├── layout.tsx            # Root layout
+├── page.tsx              # Main chat page
+└── globals.css           # Global styles
+
+components/
+├── chat-header.tsx        # Chat header component
+├── chat-input.tsx         # Chat input component
+└── chat-message.tsx       # Chat message component
+
 src/
-├── server.ts              # Entry point
-├── app.ts                 # Express app setup
-├── config/
-│   └── agent.ts          # Agent configuration
-├── agents/
-│   ├── setup.ts          # Agent initialization
-│   └── tools/
-│       ├── calculator.ts # Example tool
-│       └── index.ts      # Tool exports
-├── routes/
-│   ├── health.ts         # Health check route
-│   ├── api.ts            # API routes
-│   └── agent.ts          # Agent chat route
-├── middleware/
-│   └── error-handler.ts  # Error handling
-├── lib/
-│   ├── logger.ts         # Logging utility
-│   └── prisma.ts         # Prisma client singleton
-├── types/
-│   └── index.ts          # TypeScript types
-└── prisma/
-    └── schema.prisma     # Prisma schema (MongoDB)
+├── agents/                # LangChain agent setup
+│   ├── factory/          # Agent factory
+│   ├── managers/         # Agent manager
+│   ├── prompts/          # System prompts
+│   └── tools/            # Agent tools
+├── config/               # Configuration
+├── utils/                # Utilities (logger, API client)
+├── types/                # TypeScript types
+└── data/                 # Static data (swagger, base-info)
 ```
 
 ## Best Practices Implemented
