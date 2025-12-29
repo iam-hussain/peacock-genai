@@ -12,7 +12,8 @@
         "format": "prettier --write .",
         "test": "vitest",
         "test:watch": "vitest --watch",
-        "test:coverage": "vitest --coverage"
+        "test:coverage": "vitest --coverage",
+        "vercel-build": "next build"
     },
     "dependencies": {
         "@langchain/core": "^1.1.8",
