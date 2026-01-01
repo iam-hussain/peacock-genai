@@ -5,6 +5,7 @@ import { createAgent, type ReactAgent } from 'langchain'
 
 import { getAgentConfig } from '../../config/agent'
 import { logger } from '../../utils/logger'
+import { MEMBERSHIP_REASONING_PROMPT } from '../prompts/membership-reasoning'
 import { withGuardrail } from '../middleware/guardrail'
 import { agentTools } from '../tools'
 
@@ -31,7 +32,7 @@ class AgentManager {
       })
 
       const prompt = ChatPromptTemplate.fromMessages([
-        ['system', 'You are a helpful AI assistant for Peacock Club, a financial club management system.'],
+        ['system', MEMBERSHIP_REASONING_PROMPT],
         ['human', '{input}'],
         new MessagesPlaceholder('agent_scratchpad'),
       ])

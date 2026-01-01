@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { agentManager } from "@/agents";
+import { initializeFinanceMemory } from "@/agents/memory";
 import { generateMessageId, MESSAGE_SENDER, MESSAGE_STATUS } from "@/constants";
 import { measureTime } from "@/lib/performance";
 import {
@@ -104,6 +105,11 @@ function extractTokenUsage(
   }
 }
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 /**
  * POST /api/agent
  * Chat endpoint for interacting with the LangChain agent
@@ -112,6 +118,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const requestId = getRequestIdFromHeaders(req.headers);
 
   try {
+    // Ensure memory is initialized before handling requests
+    await initializeFinanceMemory();
+
     // Rate limiting
     const clientId = getClientIdentifier(req);
     const rateLimit = checkRateLimit(clientId, RATE_LIMIT_CONFIG);

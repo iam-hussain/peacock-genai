@@ -8,11 +8,13 @@ import {
   deleteTransactionTool,
   getTransactionsTool,
 } from "./transaction-tools";
+import { searchMemoryTool } from "./memory-tools";
 
 export const agentTools = [
   getTransactionsTool,
   createTransactionTool,
   deleteTransactionTool,
+  searchMemoryTool,
 ];
 
 export {
@@ -20,3 +22,5 @@ export {
   deleteTransactionTool,
   getTransactionsTool,
 } from "./transaction-tools";
+
+export { searchMemoryTool } from "./memory-tools";
