@@ -1,74 +1,68 @@
-/**
- * Agent Manager
- * Simple singleton manager that creates and caches the agent once
- */
+import { MessagesPlaceholder } from '@langchain/core/prompts'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { ChatOpenAI } from '@langchain/openai'
+import { createAgent, type ReactAgent } from 'langchain'
 
-import { type ReactAgent } from "langchain";
-
-import { logger } from "../../utils/logger";
-import { createAgentInstance } from "../factory/agent-factory";
+import { getAgentConfig } from '../../config/agent'
+import { logger } from '../../utils/logger'
+import { withGuardrail } from '../middleware/guardrail'
+import { agentTools } from '../tools'
 
 class AgentManager {
-  private agent: ReactAgent | null = null;
-  private initPromise: Promise<ReactAgent> | null = null;
-  private isInitialized = false;
+  private agent: ReactAgent | null = null
+  private initPromise: Promise<ReactAgent> | null = null
 
-  /**
-   * Get the agent instance (creates once, then reuses)
-   */
   async getAgent(): Promise<ReactAgent> {
-    // Return cached agent if it exists
-    if (this.agent) {
-      logger.debug("Using cached agent (no creation needed)");
-      return this.agent;
-    }
+    if (this.agent) return this.agent
+    if (this.initPromise) return this.initPromise
 
-    // If initialization is in progress, wait for it
-    if (this.initPromise) {
-      logger.debug("Agent initialization in progress, waiting...");
-      return this.initPromise;
-    }
+    this.initPromise = (async () => {
+      const config = getAgentConfig()
+      if (!config.model || !config.apiKey) {
+        throw new Error('Model and API key are required')
+      }
 
-    // Create agent (only once)
-    if (!this.isInitialized) {
-      logger.info(
-        "First call: Creating agent instance (this happens only once)"
-      );
-      this.isInitialized = true;
-    }
+      const chatModel = new ChatOpenAI({
+        modelName: config.model,
+        temperature: config.temperature,
+        maxTokens: config.maxTokens,
+        timeout: config.timeout * 1000,
+        openAIApiKey: config.apiKey,
+      })
 
-    this.initPromise = createAgentInstance();
+      const prompt = ChatPromptTemplate.fromMessages([
+        ['system', 'You are a helpful AI assistant for Peacock Club, a financial club management system.'],
+        ['human', '{input}'],
+        new MessagesPlaceholder('agent_scratchpad'),
+      ])
+
+      // LangChain's createAgent types don't include prompt parameter
+      const agent = createAgent({
+        model: chatModel,
+        prompt,
+        tools: agentTools,
+      } as any) as ReactAgent
+
+      return withGuardrail(agent)
+    })()
 
     try {
-      this.agent = await this.initPromise;
-      logger.info(
-        "Agent created and cached - will be reused for all future requests"
-      );
-      return this.agent;
+      this.agent = await this.initPromise
+      logger.info('Agent created and cached')
+      return this.agent
     } catch (error) {
-      logger.error("Failed to create agent:", error);
-      this.isInitialized = false; // Allow retry
-      throw error;
+      logger.error('Failed to create agent:', error)
+      this.initPromise = null
+      throw error
     } finally {
-      this.initPromise = null;
+      this.initPromise = null
     }
   }
 
-  /**
-   * Initialize agent at startup
-   */
   async initialize(): Promise<void> {
-    try {
-      await this.getAgent();
-      logger.info("Agent initialized successfully");
-    } catch (error) {
-      logger.error("Failed to initialize agent:", error);
-      throw error;
-    }
+    await this.getAgent()
+    logger.info('Agent initialized')
   }
 }
 
-// Singleton instance
-const agentManager = new AgentManager();
-
-export default agentManager;
+export default new AgentManager()

@@ -367,3 +367,41 @@ export async function search(query: string) {
     throw error;
   }
 }
+
+/**
+ * Create a new transaction
+ */
+export async function createTransaction(data: {
+  fromId: string
+  toId: string
+  amount: number
+  transactionType: string
+  occurredAt?: string
+  description?: string
+}) {
+  try {
+    return await apiRequest("/api/transaction/create", {
+      method: "POST",
+      body: data,
+    });
+  } catch (error) {
+    const errorInfo = formatApiError(error, "/api/transaction/create");
+    logger.error("Error creating transaction:", errorInfo.message);
+    throw error;
+  }
+}
+
+/**
+ * Delete a transaction by ID
+ */
+export async function deleteTransaction(transactionId: string) {
+  try {
+    return await apiRequest(`/api/transaction/${transactionId}`, {
+      method: "DELETE",
+    });
+  } catch (error) {
+    const errorInfo = formatApiError(error, `/api/transaction/${transactionId}`);
+    logger.error("Error deleting transaction:", errorInfo.message);
+    throw error;
+  }
+}

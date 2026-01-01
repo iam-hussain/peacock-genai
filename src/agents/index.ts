@@ -4,28 +4,14 @@
  */
 
 // Agent Manager
-export { default as agentManager } from "./managers/agent-manager";
-
-// Agent Factory
-export { createAgentInstance } from "./factory/agent-factory";
-
-// Types
-export type {
-  AgentConfig,
-  AgentFactoryOptions,
-  AgentInstance,
-  AgentType,
-} from "./types";
+export { default as agentManager } from './managers/agent-manager'
 
 // Middleware
-export { withGuardrail } from "./middleware/guardrail";
-
-// Prompts
-export { getSystemPrompt } from "./prompts/club-agent.prompt";
+export { withGuardrail } from './middleware/guardrail'
 
 // Backward compatibility
-import agentManager from "./managers/agent-manager";
+import agentManager from './managers/agent-manager'
 
 export async function getAgent() {
-  return agentManager.getAgent();
+  return agentManager.getAgent()
 }
