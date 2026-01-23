@@ -3,7 +3,118 @@
  * Parses agent responses and extracts structured UI components
  */
 
-import { type ListData, type MessageContent, type TableData } from "@/types";
+import {
+  type CardData,
+  type FormData,
+  type ListData,
+  type MessageContent,
+  type TableData,
+} from "@/types";
+
+type JsonPayload =
+  | {
+      type: "table";
+      title?: string;
+      columns?: string[];
+      headers?: string[];
+      rows?: (string | number)[];
+      data?: (string | number)[][];
+    }
+  | {
+      type: "options";
+      label?: string;
+      options?: Array<{ value: string; label: string }>;
+    }
+  | {
+      type: "cards";
+      items?: Array<{
+        title: string;
+        value: string | number;
+        helpText?: string;
+      }>;
+      title?: string;
+    }
+  | {
+      type: "list";
+      items?: string[];
+      ordered?: boolean;
+      title?: string;
+    }
+  | { type: "text"; content?: string; message?: string; text?: string };
+
+function parseJsonPayload(content: string): {
+  type: "text" | "table" | "list" | "form" | "card";
+  data: MessageContent;
+} | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch {
+    return null;
+  }
+
+  if (!parsed || typeof parsed !== "object" || !("type" in parsed)) return null;
+  const payload = parsed as JsonPayload;
+
+  if (payload.type === "table") {
+    const headers = payload.columns || payload.headers;
+    const rows = Array.isArray(payload.data) ? payload.data : payload.rows;
+    if (Array.isArray(headers) && Array.isArray(rows)) {
+      const tableData: TableData = {
+        headers: headers.map(String),
+        rows: rows.map((r) =>
+          Array.isArray(r) ? r.map((c) => c as string | number) : []
+        ),
+        caption: payload.title,
+      };
+      return { type: "table", data: tableData };
+    }
+  }
+
+  if (payload.type === "options" && Array.isArray(payload.options)) {
+    const formData: FormData = {
+      title: payload.label,
+      fields: [
+        {
+          name: "selection",
+          label: payload.label || "Choose an option",
+          type: "select",
+          options: payload.options.map((o) => o.label ?? String(o.value)),
+          value: payload.options[0]?.value,
+        },
+      ],
+      submitLabel: "Select",
+    };
+    return { type: "form", data: formData };
+  }
+
+  if (payload.type === "cards" && Array.isArray(payload.items)) {
+    const cardData: CardData = {
+      title: payload.title || "Details",
+      items: payload.items.map((i) => ({
+        label: i.title,
+        value: i.value,
+      })),
+    };
+    return { type: "card", data: cardData };
+  }
+
+  if (payload.type === "list" && Array.isArray(payload.items)) {
+    const listData: ListData = {
+      items: payload.items,
+      ordered: payload.ordered,
+      title: payload.title,
+    };
+    return { type: "list", data: listData };
+  }
+
+  if (payload.type === "text") {
+    const text = payload.content ?? payload.message ?? payload.text ?? "";
+    return { type: "text", data: text };
+  }
+
+  return null;
+}
 
 /**
  * Parse markdown table from string content
@@ -22,6 +133,7 @@ export function parseMarkdownTable(content: string): TableData | null {
   if (separatorIndex === -1 || separatorIndex === 0) return null;
 
   const headerLine = tableLines[0];
+  if (!headerLine) return null;
   const dataLines = tableLines.slice(separatorIndex + 1);
 
   const headers = headerLine
@@ -83,7 +195,8 @@ export function parseMarkdownList(content: string): ListData | null {
 
   // If no list found, check if content contains a list pattern but with explanatory text
   // Look for lines that match member list format: "Name - Status" or "Name - Status, Loan Balance: X"
-  const memberListPattern = /^[-*]\s+.+?\s-\s(Active|Inactive)(?:,\sLoan Balance:\s.+)?$/;
+  const memberListPattern =
+    /^[-*]\s+.+?\s-\s(Active|Inactive)(?:,\sLoan Balance:\s.+)?$/;
   const memberListItems = lines.filter((line) => memberListPattern.test(line));
   if (memberListItems.length > 0) {
     const items = memberListItems.map((line) => {
@@ -100,9 +213,13 @@ export function parseMarkdownList(content: string): ListData | null {
  * Parse message content and detect UI components
  */
 export function parseMessageContent(content: string): {
-  type: "text" | "table" | "list";
+  type: "text" | "table" | "list" | "form" | "card";
   data: MessageContent;
 } {
+  // Try structured JSON payload first
+  const jsonParsed = parseJsonPayload(content);
+  if (jsonParsed) return jsonParsed;
+
   // Try to parse as table first
   const tableData = parseMarkdownTable(content);
   if (tableData) {

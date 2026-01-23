@@ -2,8 +2,7 @@ import { HumanMessage } from "@langchain/core/messages";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { agentManager } from "@/agents";
-import { initializeFinanceMemory } from "@/agents/memory";
+import { getAgentGraph } from "@/ai/model";
 import { generateMessageId, MESSAGE_SENDER, MESSAGE_STATUS } from "@/constants";
 import { measureTime } from "@/lib/performance";
 import {
@@ -118,9 +117,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const requestId = getRequestIdFromHeaders(req.headers);
 
   try {
-    // Ensure memory is initialized before handling requests
-    await initializeFinanceMemory();
-
     // Rate limiting
     const clientId = getClientIdentifier(req);
     const rateLimit = checkRateLimit(clientId, RATE_LIMIT_CONFIG);
@@ -174,8 +170,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       messageId: incomingMessage.messageId,
     });
 
-    // Process message with agent (with performance measurement)
-    const agent = await agentManager.getAgent();
+    // Process message with agent graph (with performance measurement)
+    const agentGraph = getAgentGraph();
     const messageContent =
       typeof incomingMessage.content === "string"
         ? incomingMessage.content.trim()
@@ -183,7 +179,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const { result, duration } = await measureTime(
       async () =>
-        agent.invoke({
+        agentGraph.invoke({
           messages: [new HumanMessage(messageContent)],
         }),
       `Agent invocation [${requestId}]`
@@ -197,14 +193,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Extract response content from messages
     // Look through ALL messages to find tool results and AI responses
     const lastMessage = result.messages[result.messages.length - 1];
-    
+
     // Search all messages for tool results (especially get_members_list)
     let toolResultContent: string | null = null;
     let allMessageContent: string[] = [];
-    
+
     for (const msg of result.messages) {
       if (!msg) continue;
-      
+
       // Extract content from any message
       let msgContent = "";
       if (typeof msg.content === "string") {
@@ -222,16 +218,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       } else if (msg.content) {
         msgContent = String(msg.content);
       }
-      
+
       if (msgContent) {
         allMessageContent.push(msgContent);
-        
+
         // Check if this looks like a tool result (member list format)
-        const isMemberList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(msgContent);
+        const isMemberList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(
+          msgContent
+        );
         if (isMemberList && !toolResultContent) {
           toolResultContent = msgContent;
         }
-        
+
         // Also check for ToolMessage by name property
         if (
           "name" in msg &&
@@ -261,9 +259,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // Determine final response content
     let responseContent: string;
-    
+
     // If we found a tool result with member list pattern, use it
-    if (toolResultContent && /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(toolResultContent)) {
+    if (
+      toolResultContent &&
+      /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(toolResultContent)
+    ) {
       // Check if AI response is just explanatory text without the list
       const aiHasList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(aiContent);
       if (!aiHasList) {

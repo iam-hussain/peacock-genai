@@ -34,9 +34,9 @@ function parseMemberItemWithBalance(
   if (!match) return null;
 
   return {
-    name: match[1].trim(),
+    name: match[1]?.trim() ?? "",
     status: match[2] as "Active" | "Inactive",
-    loanBalance: match[3].trim(),
+    loanBalance: match[3]?.trim() ?? "",
   };
 }
 
@@ -50,7 +50,7 @@ function parseSimpleMemberItem(
   if (!match) return null;
 
   return {
-    name: match[1].trim(),
+    name: match[1]?.trim() ?? "",
     status: match[2] as "Active" | "Inactive",
   };
 }
@@ -58,11 +58,11 @@ function parseSimpleMemberItem(
 export function List({ data, className }: ListProps): JSX.Element {
   // Check if this is a member list with loan balances
   const isMemberListWithBalance =
-    data.items.length > 0 && isMemberListItemWithBalance(data.items[0]);
+    data.items.length > 0 && isMemberListItemWithBalance(data.items[0]!);
 
   // Check if this is a simple member list (name and status only)
   const isSimpleMemberList =
-    data.items.length > 0 && isSimpleMemberListItem(data.items[0]);
+    data.items.length > 0 && isSimpleMemberListItem(data.items[0]!);
 
   if (isMemberListWithBalance) {
     const members = data.items

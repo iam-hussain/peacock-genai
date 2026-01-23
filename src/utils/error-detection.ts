@@ -15,9 +15,11 @@ export interface ErrorInfo {
  * Detect error type from error object
  */
 export function detectErrorType(error: unknown): ErrorInfo {
-  const errorMessage = error?.message || String(error) || "Unknown error";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const err = error as any;
+  const errorMessage = err?.message || String(error) || "Unknown error";
   const errorStatus =
-    error?.status || error?.statusCode || error?.response?.status;
+    err?.status || err?.statusCode || err?.response?.status;
   const normalizedMessage = errorMessage.toLowerCase();
 
   return {

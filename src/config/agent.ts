@@ -8,7 +8,7 @@ const agentEnvSchema = z.object({
     .string()
     .transform(Number)
     .pipe(z.number().min(0).max(2))
-    .default("0.7"),
+    .default("0.2"),
   AGENT_MAX_TOKENS: z
     .string()
     .transform(Number)

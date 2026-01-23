@@ -32,4 +32,4 @@ Both late join and delayed payment adjustment amounts are recorded at the member
 Authoritative usage
 
 This document defines the authoritative rules for contribution stages, joining adjustments, delayed payment adjustments, and date-based evaluation for Peacock Club. It is intended for deterministic use by automated systems and AI agents when reasoning about member balances, historical contributions, offsets, and adjustment calculations across different time periods.
-`
+`;

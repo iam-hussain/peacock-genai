@@ -48,7 +48,7 @@ export function formatApiError(error: unknown, endpoint: string): ApiErrorInfo {
 
     // Extract status code if available
     const statusMatch = error.message.match(/(\d{3})/);
-    const statusCode = statusMatch ? parseInt(statusMatch[1], 10) : undefined;
+    const statusCode = statusMatch ? parseInt(statusMatch[1]!, 10) : undefined;
 
     return {
       message: error.message,

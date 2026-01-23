@@ -92,5 +92,4 @@ Never apply Bravo rules before 2023-09-01.
 Do not invent dates, amounts, or formulas.
 
 If required data is missing or ambiguous, state that the information is insufficient.
-`.trim()
-
+`.trim();

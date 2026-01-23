@@ -372,12 +372,12 @@ export async function search(query: string) {
  * Create a new transaction
  */
 export async function createTransaction(data: {
-  fromId: string
-  toId: string
-  amount: number
-  transactionType: string
-  occurredAt?: string
-  description?: string
+  fromId: string;
+  toId: string;
+  amount: number;
+  transactionType: string;
+  occurredAt?: string;
+  description?: string;
 }) {
   try {
     return await apiRequest("/api/transaction/create", {
@@ -400,7 +400,10 @@ export async function deleteTransaction(transactionId: string) {
       method: "DELETE",
     });
   } catch (error) {
-    const errorInfo = formatApiError(error, `/api/transaction/${transactionId}`);
+    const errorInfo = formatApiError(
+      error,
+      `/api/transaction/${transactionId}`
+    );
     logger.error("Error deleting transaction:", errorInfo.message);
     throw error;
   }
