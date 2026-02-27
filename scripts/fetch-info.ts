@@ -6,7 +6,7 @@ import path from "path";
  */
 async function fetchInfo() {
   const baseUrl = process.env.PEACOCK_API_URL || "http://localhost:3001";
-  const outputFile = process.env.INFO_OUTPUT_FILE || "src/data/base-info.json";
+  const outputFile = process.env.INFO_OUTPUT_FILE || "src/lib/data/base-info.json";
   const username = process.env.PEACOCK_ADMIN_USERNAME || "admin";
   const password = process.env.PEACOCK_ADMIN_PASSWORD || "peacock";
 
@@ -66,7 +66,9 @@ async function fetchInfo() {
     }
     console.error(`\nPlease check:`);
     console.error(`  1. Server is running on ${baseUrl}`);
-    console.error(`  2. Admin credentials are correct (username: ${username})`);
+    console.error(
+      `  2. Admin credentials are correct (username: ${username}) (password: ${password})`
+    );
     console.error(`  3. The /api/info endpoint is accessible`);
     process.exit(1);
   }

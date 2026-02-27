@@ -11,12 +11,12 @@ Fetches the Swagger/OpenAPI JSON specification from your server and saves it to 
 npm run fetch-swagger
 
 # Custom URL and output file via environment variables
-SWAGGER_URL=http://localhost:3001 OUTPUT_FILE=src/data/openapi.json npm run fetch-swagger
+PEACOCK_API_URL=http://localhost:3001 OUTPUT_FILE=src/data/openapi.json npm run fetch-swagger
 ```
 
 ### Environment Variables
 
-- `SWAGGER_URL` - Base URL of your server (default: `http://localhost:3001`)
+- `PEACOCK_API_URL` - Base URL of your server (default: `http://localhost:3001`)
 - `OUTPUT_FILE` - Name of the output file (default: `src/data/swagger.json`)
 
 ### How it works
@@ -33,7 +33,7 @@ It will use the first endpoint that returns a valid OpenAPI/Swagger JSON specifi
 
 ## fetch-info.ts
 
-Fetches all accounts and club configuration from the `/api/info` endpoint and saves it to a local file. Requires admin authentication.
+Fetches all accounts and club configuration from the `/api/info` endpoint and saves it to a local file. The `/api/info` endpoint may require authentication depending on server configuration.
 
 ### Usage
 

@@ -6,7 +6,7 @@ import path from "path";
  */
 async function fetchSwaggerSpec() {
   const baseUrl = process.env.PEACOCK_API_URL || "http://localhost:3001";
-  const outputFile = process.env.OUTPUT_FILE || "src/data/swagger.json";
+  const outputFile = process.env.OUTPUT_FILE || "src/lib/data/swagger.json";
 
   // Common Swagger/OpenAPI JSON endpoints
   const endpoints = ["/docs/json"];
