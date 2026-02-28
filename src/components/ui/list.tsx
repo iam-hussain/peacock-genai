@@ -1,11 +1,45 @@
 import * as React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import { cn } from "@/lib/utils";
 import { type ListData } from "@/types";
 
+/** Renders inline markdown (bold, italic, code) within list items */
+function InlineMarkdown({ children }: { children: string }) {
+  const content =
+    typeof children === "string" ? children : String(children ?? "");
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <>{children}</>,
+        ul: ({ children }) => <>{children}</>,
+        ol: ({ children }) => <>{children}</>,
+        li: ({ children }) => <>{children}</>,
+        strong: ({ children }) => (
+          <strong className="font-semibold">{children}</strong>
+        ),
+        em: ({ children }) => <em>{children}</em>,
+        code: ({ children }) => (
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">
+            {children}
+          </code>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
+}
+
+const DEFAULT_MAX_ITEMS = 20;
+
 interface ListProps {
   data: ListData;
   className?: string;
+  /** Max items to show before "Show N more" expansion. Set to 0 for no limit. */
+  maxItems?: number;
 }
 
 /**
@@ -55,7 +89,13 @@ function parseSimpleMemberItem(
   };
 }
 
-export function List({ data, className }: ListProps): JSX.Element {
+export function List({
+  data,
+  className,
+  maxItems = DEFAULT_MAX_ITEMS,
+}: ListProps): JSX.Element {
+  const [expanded, setExpanded] = React.useState(false);
+
   // Check if this is a member list with loan balances
   const isMemberListWithBalance =
     data.items.length > 0 && isMemberListItemWithBalance(data.items[0]!);
@@ -72,6 +112,13 @@ export function List({ data, className }: ListProps): JSX.Element {
           m !== null
       );
 
+    const showMoreCount = maxItems > 0 ? members.length - maxItems : 0;
+    const displayMembers =
+      maxItems > 0 && members.length > maxItems
+        ? members.slice(0, maxItems)
+        : members;
+    const visibleMembers = expanded ? members : displayMembers;
+
     return (
       <div className={cn("space-y-3", className)}>
         {data.title && (
@@ -79,53 +126,70 @@ export function List({ data, className }: ListProps): JSX.Element {
             {data.title}
           </h3>
         )}
-        <div className="space-y-2 max-h-[600px] overflow-y-auto">
-          {members.map((member, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex items-center justify-between gap-4 p-3 rounded-lg border transition-colors",
-                member.status === "Active"
-                  ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
-                  : "bg-muted/30 border-border hover:bg-muted/50"
-              )}
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+        {members.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            No members found
+          </p>
+        ) : (
+          <>
+            <div className="space-y-2 max-h-[600px] overflow-y-auto">
+              {visibleMembers.map((member, index) => (
                 <div
+                  key={index}
                   className={cn(
-                    "h-2 w-2 rounded-full shrink-0",
+                    "flex items-center justify-between gap-4 p-3 rounded-lg border transition-colors",
                     member.status === "Active"
-                      ? "bg-primary"
-                      : "bg-muted-foreground"
-                  )}
-                />
-                <span className="font-medium text-foreground truncate">
-                  {member.name}
-                </span>
-              </div>
-              <div className="flex items-center gap-4 shrink-0">
-                <span
-                  className={cn(
-                    "px-2 py-1 rounded text-xs font-medium",
-                    member.status === "Active"
-                      ? "bg-primary/20 text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
+                      ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
+                      : "bg-muted/30 border-border hover:bg-muted/50"
                   )}
                 >
-                  {member.status}
-                </span>
-                <div className="text-right">
-                  <div className="text-xs text-muted-foreground">
-                    Loan Balance
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        member.status === "Active"
+                          ? "bg-primary"
+                          : "bg-muted-foreground"
+                      )}
+                    />
+                    <span className="font-medium text-foreground truncate">
+                      {member.name}
+                    </span>
                   </div>
-                  <div className="text-sm font-semibold text-foreground">
-                    ₹{member.loanBalance}
+                  <div className="flex items-center gap-4 shrink-0">
+                    <span
+                      className={cn(
+                        "px-2 py-1 rounded text-xs font-medium",
+                        member.status === "Active"
+                          ? "bg-primary/30 text-primary-foreground"
+                          : "bg-muted/80 text-muted-foreground"
+                      )}
+                    >
+                      {member.status}
+                    </span>
+                    <div className="text-right">
+                      <div className="text-xs text-muted-foreground">
+                        Loan Balance
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">
+                        ₹{member.loanBalance}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+            {showMoreCount > 0 && !expanded && (
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                Show {showMoreCount} more
+              </button>
+            )}
+          </>
+        )}
       </div>
     );
   }
@@ -138,6 +202,13 @@ export function List({ data, className }: ListProps): JSX.Element {
           m !== null
       );
 
+    const showMoreCount = maxItems > 0 ? members.length - maxItems : 0;
+    const displayMembers =
+      maxItems > 0 && members.length > maxItems
+        ? members.slice(0, maxItems)
+        : members;
+    const visibleMembers = expanded ? members : displayMembers;
+
     // Compact view for simple member lists (no loan balances)
     return (
       <div className={cn("space-y-2", className)}>
@@ -146,43 +217,60 @@ export function List({ data, className }: ListProps): JSX.Element {
             {data.title}
           </h3>
         )}
-        <div className="max-h-[500px] overflow-y-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {members.map((member, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md border transition-colors",
-                  member.status === "Active"
-                    ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
-                    : "bg-muted/20 border-border hover:bg-muted/40"
-                )}
-              >
-                <div
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full shrink-0",
-                    member.status === "Active"
-                      ? "bg-primary"
-                      : "bg-muted-foreground"
-                  )}
-                />
-                <span className="text-sm font-medium text-foreground truncate flex-1">
-                  {member.name}
-                </span>
-                <span
-                  className={cn(
-                    "px-1.5 py-0.5 rounded text-xs font-medium shrink-0",
-                    member.status === "Active"
-                      ? "bg-primary/20 text-primary-foreground"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {member.status}
-                </span>
+        {members.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            No members found
+          </p>
+        ) : (
+          <>
+            <div className="max-h-[500px] overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {visibleMembers.map((member, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "flex items-center gap-2 px-3 py-2 rounded-md border transition-colors",
+                      member.status === "Active"
+                        ? "bg-primary/5 border-primary/20 hover:bg-primary/10"
+                        : "bg-muted/20 border-border hover:bg-muted/40"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full shrink-0",
+                        member.status === "Active"
+                          ? "bg-primary"
+                          : "bg-muted-foreground"
+                      )}
+                    />
+                    <span className="text-sm font-medium text-foreground truncate flex-1">
+                      {member.name}
+                    </span>
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded text-xs font-medium shrink-0",
+                        member.status === "Active"
+                          ? "bg-primary/30 text-primary-foreground"
+                          : "bg-muted/80 text-muted-foreground"
+                      )}
+                    >
+                      {member.status}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+            {showMoreCount > 0 && !expanded && (
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="text-sm text-primary hover:underline font-medium"
+              >
+                Show {showMoreCount} more
+              </button>
+            )}
+          </>
+        )}
       </div>
     );
   }
@@ -193,20 +281,44 @@ export function List({ data, className }: ListProps): JSX.Element {
     ? "list-decimal list-inside"
     : "list-disc list-inside";
 
+  const showMoreCount = maxItems > 0 ? data.items.length - maxItems : 0;
+  const displayItems =
+    maxItems > 0 && data.items.length > maxItems
+      ? data.items.slice(0, maxItems)
+      : data.items;
+  const visibleItems = expanded ? data.items : displayItems;
+
   return (
     <div className={cn("space-y-2", className)}>
       {data.title && (
         <h3 className="text-sm font-semibold text-foreground">{data.title}</h3>
       )}
-      <ListComponent
-        className={cn("space-y-2 text-sm text-foreground", listStyle)}
-      >
-        {data.items.map((item, index) => (
-          <li key={index} className="pl-2 py-1">
-            {item}
-          </li>
-        ))}
-      </ListComponent>
+      {data.items.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">
+          No items found
+        </p>
+      ) : (
+        <>
+          <ListComponent
+            className={cn("space-y-2 text-sm text-foreground", listStyle)}
+          >
+            {visibleItems.map((item, index) => (
+              <li key={index} className="pl-2 py-1 [&>p]:inline [&>p]:m-0">
+                <InlineMarkdown>{String(item)}</InlineMarkdown>
+              </li>
+            ))}
+          </ListComponent>
+          {showMoreCount > 0 && !expanded && (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="text-sm text-primary hover:underline font-medium"
+            >
+              Show {showMoreCount} more
+            </button>
+          )}
+        </>
+      )}
     </div>
   );
 }

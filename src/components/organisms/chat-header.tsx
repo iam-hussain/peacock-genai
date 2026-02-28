@@ -1,40 +1,41 @@
-'use client'
+"use client";
 
-import { Check, RefreshCw } from 'lucide-react'
-import Image from 'next/image'
-import { useState } from 'react'
+import { BookOpen, Check, Plus, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from '@/components/molecules/theme-toggle'
-import { cn } from '@/lib/utils'
+import { ThemeToggle } from "@/components/molecules/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function ChatHeader() {
-  const [isClearing, setIsClearing] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [isClearing, setIsClearing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleClearCache = async (): Promise<void> => {
-    setIsClearing(true)
-    setShowSuccess(false)
+    setIsClearing(true);
+    setShowSuccess(false);
 
     try {
-      const response = await fetch('/api/agents/clear', {
-        method: 'POST',
-      })
+      const response = await fetch("/api/agents/clear", {
+        method: "POST",
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to clear cache')
+        throw new Error("Failed to clear cache");
       }
 
-      setShowSuccess(true)
+      setShowSuccess(true);
       setTimeout(() => {
-        setShowSuccess(false)
-      }, 2000)
+        setShowSuccess(false);
+      }, 2000);
     } catch (error) {
-      console.error('Error clearing cache:', error)
+      console.error("Error clearing cache:", error);
     } finally {
-      setIsClearing(false)
+      setIsClearing(false);
     }
-  }
+  };
 
   return (
     <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -48,15 +49,39 @@ export function ChatHeader() {
             className="h-8 w-8"
             priority
           />
-          <h1 className="text-xl font-semibold">Peacock AI</h1>
+          <h1 className="font-brand text-xl font-bold">Peacock AI</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
+            asChild
+            className="h-9 w-9"
+            aria-label="Create transaction"
+            title="Create transaction"
+          >
+            <Link href="/transactions/create">
+              <Plus className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="h-9 w-9"
+            aria-label="Example prompts"
+            title="Example prompts"
+          >
+            <Link href="/prompts">
+              <BookOpen className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={handleClearCache}
             disabled={isClearing}
-            className={cn('h-9 w-9', showSuccess && 'text-success')}
+            className={cn("h-9 w-9", showSuccess && "text-success")}
             aria-label="Clear API cache"
             title="Clear API cache"
           >
@@ -64,7 +89,7 @@ export function ChatHeader() {
               <Check className="h-4 w-4" />
             ) : (
               <RefreshCw
-                className={cn('h-4 w-4', isClearing && 'animate-spin')}
+                className={cn("h-4 w-4", isClearing && "animate-spin")}
               />
             )}
           </Button>
@@ -72,5 +97,5 @@ export function ChatHeader() {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,41 +1,41 @@
-import baseInfo from '@/lib/data/base-info.json'
+import baseInfo from "@/lib/data/base-info.json";
 
 const formatBaseInfo = (info: typeof baseInfo) => {
-  const { clubConfig, member, vendor, transactionTypeHumanMap } = info
+  const { clubConfig, member, vendor, transactionTypeHumanMap } = info;
 
   const stages = clubConfig.stages
     .map(
       (s) =>
-        `    - ${s.name.toUpperCase()}: ${s.amount} (From: ${s.startDate}${s.endDate ? `, To: ${s.endDate}` : ''})`
+        `    - ${s.name.toUpperCase()}: ${s.amount} (From: ${s.startDate}${s.endDate ? `, To: ${s.endDate}` : ""})`
     )
-    .join('\n')
+    .join("\n");
 
   const configSection = `CLUB CONFIGURATION
   - Started: ${clubConfig.startedAt}
   - Contribution Stages:
-${stages}`
+${stages}`;
 
-  const activeMembers = member.filter((m) => m.status === 'ACTIVE')
-  const inactiveMembers = member.filter((m) => m.status !== 'ACTIVE')
+  const activeMembers = member.filter((m) => m.status === "ACTIVE");
+  const inactiveMembers = member.filter((m) => m.status !== "ACTIVE");
 
   const membersSection = `MEMBERS (Total: ${member.length})
 
 ACTIVE MEMBERS (${activeMembers.length})
-${activeMembers.map((m) => `  - ${m.firstName} ${m.lastName || ''} (@${m.username}) [${m.role}] [ID: ${m.id}] [PHONE: +91 ${m.phone}]`).join('\n')}
+${activeMembers.map((m) => `  - ${m.firstName} ${m.lastName || ""} (@${m.username}) [${m.role}] [ID: ${m.id}] [PHONE: +91 ${m.phone}]`).join("\n")}
 
 INACTIVE MEMBERS (${inactiveMembers.length})
-${inactiveMembers.map((m) => `  - ${m.firstName} ${m.lastName || ''} (@${m.username}) [${m.role}] [ID: ${m.id}] [PHONE: +91 ${m.phone}]`).join('\n')}`
+${inactiveMembers.map((m) => `  - ${m.firstName} ${m.lastName || ""} (@${m.username}) [${m.role}] [ID: ${m.id}] [PHONE: +91 ${m.phone}]`).join("\n")}`;
 
   const vendorsSection = `VENDORS (${vendor.length})
-${vendor.map((v) => `  - ${v.firstName} ${v.lastName || ''} (@${v.username}) [${v.status}] [ID: ${v.id}]`).join('\n')}`
+${vendor.map((v) => `  - ${v.firstName} ${v.lastName || ""} (@${v.username}) [${v.status}] [ID: ${v.id}]`).join("\n")}`;
 
   const txnTypes = `TRANSACTION TYPES
 ${Object.entries(transactionTypeHumanMap)
   .map(([k, v]) => `  - ${k}: ${v}`)
-  .join('\n')}`
+  .join("\n")}`;
 
-  return [configSection, membersSection, vendorsSection, txnTypes].join('\n\n')
-}
+  return [configSection, membersSection, vendorsSection, txnTypes].join("\n\n");
+};
 
 export const MAIN_SYSTEM_PROMPT = `
 You are a helpful AI assistant for Peacock Club financial management.
@@ -141,4 +141,4 @@ All responses must strictly follow the rules above.
 
 Base Information:
 ${formatBaseInfo(baseInfo)}
-`
+`;

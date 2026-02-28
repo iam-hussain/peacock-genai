@@ -1,27 +1,27 @@
-'use client'
+"use client";
 
-import { X } from 'lucide-react'
+import { X } from "lucide-react";
 
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface ApiError {
-  id: string
-  message: string
-  timestamp: Date
-  endpoint?: string
+  id: string;
+  message: string;
+  timestamp: Date;
+  endpoint?: string;
 }
 
 interface ApiErrorBannerProps {
-  error: ApiError | null
-  onClear: () => void
+  error: ApiError | null;
+  onClear: () => void;
 }
 
 export function ApiErrorBanner({
   error,
   onClear,
 }: ApiErrorBannerProps): JSX.Element | null {
-  if (!error) return null
+  if (!error) return null;
 
   return (
     <div className="border-b border-destructive/20 bg-destructive/10 px-4 py-3">
@@ -44,7 +44,7 @@ export function ApiErrorBanner({
           size="icon"
           onClick={onClear}
           className={cn(
-            'h-8 w-8 shrink-0 text-destructive hover:bg-destructive/20'
+            "h-8 w-8 shrink-0 text-destructive hover:bg-destructive/20"
           )}
           aria-label="Clear error"
         >
@@ -52,5 +52,5 @@ export function ApiErrorBanner({
         </Button>
       </div>
     </div>
-  )
+  );
 }

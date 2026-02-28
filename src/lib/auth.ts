@@ -1,6 +1,10 @@
 /**
  * Shared Peacock API authentication
  * Centralizes session cookie management for server-side API access
+ *
+ * Token generation: POST /api/auth/login (see swagger)
+ * - Body: { username, password }
+ * - Response: Set-Cookie header with session token
  */
 
 import { type ApiErrorInfo, formatApiError } from "@/utils/api-error";
@@ -8,6 +12,9 @@ import { logger } from "@/utils/logger";
 
 const ADMIN_USERNAME = process.env.PEACOCK_ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.PEACOCK_ADMIN_PASSWORD || "peacock";
+
+/** Cookie names used by Peacock API (swagger: "session", some deployments: "pc_auth") */
+const COOKIE_NAMES = ["session", "pc_auth"];
 
 const TOKEN_VALIDITY_DAYS = 7;
 const TOKEN_REFRESH_DAYS = 5;
@@ -79,10 +86,18 @@ async function login(): Promise<string> {
 
       const setCookieHeader = response.headers.get("set-cookie");
       if (setCookieHeader) {
-        const match = setCookieHeader.match(/pc_auth=([^;]+)/);
-        if (match) {
+        let cookie: string | null = null;
+        for (const name of COOKIE_NAMES) {
+          const match = setCookieHeader.match(
+            new RegExp(`${name}=([^;]+)`, "i")
+          );
+          if (match) {
+            cookie = `${name}=${match[1]}`;
+            break;
+          }
+        }
+        if (cookie) {
           const now = Date.now();
-          const cookie = `pc_auth=${match[1]}`;
           sessionCookieData = {
             cookie,
             createdAt: now,
@@ -90,7 +105,7 @@ async function login(): Promise<string> {
             refreshAt: now + TOKEN_REFRESH_DAYS * MILLISECONDS_PER_DAY,
           };
           logger.info(
-            `Successfully logged in as admin. Token expires in ${TOKEN_VALIDITY_DAYS} days, will refresh in ${TOKEN_REFRESH_DAYS} days`
+            `Successfully logged in via /api/auth/login. Token expires in ${TOKEN_VALIDITY_DAYS} days, will refresh in ${TOKEN_REFRESH_DAYS} days`
           );
           return cookie;
         }
@@ -130,4 +145,29 @@ export function clearSessionToken(): void {
   sessionCookieData = null;
   loginPromise = null;
   logger.debug("Session token cleared");
+}
+
+/**
+ * Authenticated fetch to Peacock API.
+ * Automatically includes the session cookie (login token) in all requests.
+ * Use this for all tool API calls.
+ */
+export async function peacockFetch(
+  path: string,
+  init: RequestInit = {}
+): Promise<Response> {
+  const cookie = await getSessionCookie();
+  const baseUrl = getPeacockApiUrl();
+  const url = path.startsWith("http") ? path : `${baseUrl}${path}`;
+
+  const headers = new Headers(init.headers);
+  headers.set("Cookie", cookie);
+  if (!headers.has("Content-Type") && init.body) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  return fetch(url, {
+    ...init,
+    headers,
+  });
 }

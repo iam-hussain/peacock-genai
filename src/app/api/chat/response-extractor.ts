@@ -2,68 +2,68 @@
  * Extracts token usage and response content from LangChain agent results
  */
 
-import type { Message } from '@/types'
+import type { Message } from "@/types";
 
 interface LangChainMetadata {
   usage?: {
-    prompt_tokens?: number
-    completion_tokens?: number
-    total_tokens?: number
-    promptTokens?: number
-    completionTokens?: number
-    totalTokens?: number
-  }
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+  };
   token_usage?: {
-    prompt_tokens?: number
-    completion_tokens?: number
-    total_tokens?: number
-    promptTokens?: number
-    completionTokens?: number
-    totalTokens?: number
-  }
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+  };
 }
 
 interface LangChainMessage {
-  content?: string | unknown[]
-  response_metadata?: LangChainMetadata
-  metadata?: LangChainMetadata
-  name?: string
+  content?: string | unknown[];
+  response_metadata?: LangChainMetadata;
+  metadata?: LangChainMetadata;
+  name?: string;
 }
 
 export interface LangChainResult {
-  response_metadata?: LangChainMetadata
-  metadata?: LangChainMetadata
-  messages?: LangChainMessage[]
+  response_metadata?: LangChainMetadata;
+  metadata?: LangChainMetadata;
+  messages?: LangChainMessage[];
 }
 
 export function extractTokenUsage(
   result: LangChainResult
-): Message['tokenUsage'] | undefined {
+): Message["tokenUsage"] | undefined {
   try {
-    const metadata = result.response_metadata || result.metadata || {}
-    const usage = metadata.usage || metadata.token_usage || {}
+    const metadata = result.response_metadata || result.metadata || {};
+    const usage = metadata.usage || metadata.token_usage || {};
 
-    const lastMessage = result.messages?.[result.messages.length - 1]
+    const lastMessage = result.messages?.[result.messages.length - 1];
     const messageMetadata =
-      lastMessage?.response_metadata || lastMessage?.metadata || {}
+      lastMessage?.response_metadata || lastMessage?.metadata || {};
     const messageUsage =
-      messageMetadata.usage || messageMetadata.token_usage || {}
+      messageMetadata.usage || messageMetadata.token_usage || {};
 
     const promptTokens =
       usage.prompt_tokens ||
       usage.promptTokens ||
       messageUsage.prompt_tokens ||
-      messageUsage.promptTokens
+      messageUsage.promptTokens;
     const completionTokens =
       usage.completion_tokens ||
       usage.completionTokens ||
       messageUsage.completion_tokens ||
-      messageUsage.completionTokens
+      messageUsage.completionTokens;
     const totalTokens =
       usage.total_tokens ||
       usage.totalTokens ||
       messageUsage.total_tokens ||
-      messageUsage.totalTokens
+      messageUsage.totalTokens;
 
     if (promptTokens || completionTokens || totalTokens) {
       return {
@@ -72,84 +72,86 @@ export function extractTokenUsage(
           ? Number(completionTokens)
           : undefined,
         totalTokens: totalTokens ? Number(totalTokens) : undefined,
-      }
+      };
     }
 
-    return undefined
+    return undefined;
   } catch {
-    return undefined
+    return undefined;
   }
 }
 
 export function extractResponseContent(result: LangChainResult): string {
-  const lastMessage = result.messages?.[result.messages.length - 1]
+  const lastMessage = result.messages?.[result.messages.length - 1];
 
-  let toolResultContent: string | null = null
+  let toolResultContent: string | null = null;
 
   for (const msg of result.messages ?? []) {
-    if (!msg) continue
+    if (!msg) continue;
 
-    let msgContent = ''
-    if (typeof msg.content === 'string') {
-      msgContent = msg.content
+    let msgContent = "";
+    if (typeof msg.content === "string") {
+      msgContent = msg.content;
     } else if (Array.isArray(msg.content)) {
       msgContent = msg.content
         .map((c: unknown) => {
-          if (typeof c === 'string') return c
-          if (c && typeof c === 'object' && 'text' in c) {
-            return (c as { text: string }).text
+          if (typeof c === "string") return c;
+          if (c && typeof c === "object" && "text" in c) {
+            return (c as { text: string }).text;
           }
-          return String(c)
+          return String(c);
         })
-        .join('\n')
+        .join("\n");
     } else if (msg.content) {
-      msgContent = String(msg.content)
+      msgContent = String(msg.content);
     }
 
     if (msgContent) {
-      const isMemberList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(msgContent)
+      const isMemberList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(
+        msgContent
+      );
       if (isMemberList && !toolResultContent) {
-        toolResultContent = msgContent
+        toolResultContent = msgContent;
       }
       if (
-        'name' in msg &&
-        typeof (msg as { name?: unknown }).name === 'string' &&
-        (msg as { name: string }).name === 'get_members_list'
+        "name" in msg &&
+        typeof (msg as { name?: unknown }).name === "string" &&
+        (msg as { name: string }).name === "get_members_list"
       ) {
-        toolResultContent = msgContent
+        toolResultContent = msgContent;
       }
     }
   }
 
   const aiContent =
-    typeof lastMessage?.content === 'string'
+    typeof lastMessage?.content === "string"
       ? lastMessage.content
       : Array.isArray(lastMessage?.content)
         ? lastMessage.content
             .map((c: unknown) => {
-              if (typeof c === 'string') return c
-              if (c && typeof c === 'object' && 'text' in c) {
-                return (c as { text: string }).text
+              if (typeof c === "string") return c;
+              if (c && typeof c === "object" && "text" in c) {
+                return (c as { text: string }).text;
               }
-              return String(c)
+              return String(c);
             })
-            .join('')
-        : ''
+            .join("")
+        : "";
 
   if (
     toolResultContent &&
     /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(toolResultContent)
   ) {
-    const aiHasList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(aiContent)
+    const aiHasList = /^[-*]\s+.+?\s-\s(Active|Inactive)/m.test(aiContent);
     if (!aiHasList) {
-      return toolResultContent
+      return toolResultContent;
     }
-    return aiContent
+    return aiContent;
   }
 
   if (toolResultContent) {
-    return `${aiContent}\n\n${toolResultContent}`
+    return `${aiContent}\n\n${toolResultContent}`;
   }
 
-  return aiContent
+  return aiContent;
 }
